@@ -39,20 +39,21 @@ const PAGE_TITLES: Record<string, string> = {
 }
 
 export default function Header() {
-  const pathname       = usePathname()
-  const { signOut }    = useClerk()
+  const pathname        = usePathname()
+  const { signOut }     = useClerk()
   const [time, setTime] = useState('')
   const [date, setDate] = useState('')
-  const [glitching, setGlitching] = useState(false)
+  const [phase, setPhase] = useState<'idle' | 'covering' | 'done'>('idle')
 
   async function logout() {
-    setGlitching(true)
-    // Let the glitch animation play, then sign out and hard-reload
+    if (phase !== 'idle') return
+    setPhase('covering')
+
+    // Wait for the overlay to reach full opacity (280ms), then sign out & navigate
     setTimeout(async () => {
       await signOut()
-      // Hard reload so the server layout re-evaluates auth and hides sidebar
       window.location.href = '/sign-in'
-    }, 550)
+    }, 280)
   }
 
   useEffect(() => {
@@ -70,20 +71,17 @@ export default function Header() {
 
   return (
     <>
-      {/* Glitch-out logout overlay */}
-      {glitching && (
-        <div className="fixed inset-0 z-[9999] pointer-events-none animate-glitch-out origin-center">
-          {/* CRT scan lines */}
+      {/* ── Logout overlay: solid dark screen that fades to opaque, hiding the page change ── */}
+      {phase === 'covering' && (
+        <div
+          className="fixed inset-0 z-[9999] bg-[#03060a]"
+          style={{ animation: 'fadeToBlack 0.28s ease-in forwards', pointerEvents: 'none' }}
+        >
+          {/* Subtle CRT collapse line */}
           <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,245,212,0.04) 3px, rgba(0,245,212,0.04) 4px)',
-            }}
+            className="absolute left-0 right-0 h-[1px] top-1/2 -translate-y-1/2 bg-[#00f5d4]/25"
+            style={{ animation: 'crtLine 0.28s ease-in forwards' }}
           />
-          {/* Red tint during glitch */}
-          <div className="absolute inset-0 bg-[#ff3366]/8" />
-          {/* Cyan flash bar */}
-          <div className="absolute left-0 right-0 h-[2px] top-1/2 bg-[#00f5d4]/60 blur-[1px]" />
         </div>
       )}
 
@@ -115,9 +113,9 @@ export default function Header() {
           </div>
           <button
             onClick={logout}
-            disabled={glitching}
+            disabled={phase !== 'idle'}
             title="Log out"
-            className="flex items-center gap-1.5 text-cyber-muted hover:text-red-400 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 text-cyber-muted hover:text-red-400 transition-colors disabled:opacity-40"
           >
             <LogOut size={11} />
             <span className="font-mono text-[10px] tracking-widest uppercase">Logout</span>

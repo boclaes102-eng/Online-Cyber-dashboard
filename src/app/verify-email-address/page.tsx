@@ -35,8 +35,7 @@ const appearance = {
     otpCodeField:              'gap-2',
     alertText:                 'text-[#f85149] font-mono text-[10px]',
     alert:                     'bg-[#f85149]/10 border border-[#f85149]/30 rounded',
-    internal__poweredByClerkTag: '!hidden',
-    footer__poweredByClerk:      '!hidden',
+    footerPages:               '!hidden',
   },
 }
 

@@ -2,7 +2,6 @@
 
 import { SignUp } from '@clerk/nextjs'
 import { Shield } from 'lucide-react'
-import { useEffect, useState } from 'react'
 
 const appearance = {
   variables: {
@@ -46,25 +45,14 @@ const appearance = {
     alert:                     'bg-[#f85149]/10 border border-[#f85149]/30 rounded',
     otpCodeFieldInput:         'bg-[#0d1117] border border-[#30363d] text-[#e6edf3] font-mono text-lg font-bold text-center rounded caret-[#00f5d4] focus:border-[#00f5d4]/60 focus:ring-1 focus:ring-[#00f5d4]/20',
     otpCodeField:              'gap-2',
-    // Hide "Secured by Clerk" branding
-    internal__poweredByClerkTag: '!hidden',
-    footer__poweredByClerk:      '!hidden',
+    // Hide "Secured by Clerk" + Terms/Privacy/Help footer section
+    footerPages:               '!hidden',
   },
 }
 
 export default function SignUpPage() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
-
   return (
     <div className="min-h-screen bg-[#03060a] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-
-      {/* Boot scan line */}
-      {mounted && (
-        <div className="fixed inset-x-0 top-0 h-[2px] pointer-events-none z-50 animate-boot-scan"
-          style={{ background: 'linear-gradient(90deg, transparent 0%, #00f5d4 40%, #00f5d4 60%, transparent 100%)' }}
-        />
-      )}
 
       {/* Cyber grid */}
       <div
@@ -97,7 +85,6 @@ export default function SignUpPage() {
             Operations Center
           </p>
 
-          {/* Scan line decoration */}
           <div className="flex items-center gap-3 mt-4">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#00f5d4]/40" />
             <div className="w-1 h-1 rounded-full bg-[#00f5d4]/60 animate-pulse" />
@@ -111,7 +98,7 @@ export default function SignUpPage() {
         </div>
 
         {/* Status */}
-        <div className="flex items-center gap-2 mt-6 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+        <div className="flex items-center gap-2 mt-6 animate-fade-in" style={{ animationDelay: '0.5s', animationFillMode: 'both' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-[#3fb950] animate-pulse" />
           <span className="font-mono text-[9px] text-[#8b949e] tracking-[0.25em] uppercase">
             System Online
