@@ -1,6 +1,6 @@
 # CyberOps Dashboard
 
-> A full-stack cybersecurity operations platform built with Next.js 15, TypeScript, and Tailwind CSS. 50+ integrated tools across OSINT, recon, threat intelligence, web analysis, forensics, and reporting — all behind Clerk authentication with per-route rate limiting.
+> A full-stack cybersecurity operations platform built with Next.js 15, TypeScript, and Tailwind CSS. 50 integrated tools across OSINT, recon, threat intelligence, web analysis, forensics, automation, and reporting — all behind Clerk authentication with per-route rate limiting.
 
 ![CyberOps Dashboard](13.04.2026_09.36.55_REC.png)
 
@@ -90,6 +90,11 @@ Built entirely from scratch with zero heavy runtime dependencies. No chart libra
 | Token Generator | Cryptographically random API keys, UUIDs, passwords, nonces |
 | Hex / Binary | Multi-format converter (hex/bin/dec/oct/text) with full DataView integer interpretation (int8–int64, float32/64, BE/LE) |
 | Regex Tester | Live regex engine with 35+ security presets across 6 categories (Network/IOC, Hashes, Attack Patterns, Log Analysis, Threat Intel, Secrets/DLP) |
+
+### Automation
+| Tool | What it does |
+|---|---|
+| Automation Scanner | Chain recon and analysis steps into sequential workflows. Built-in presets for Domain, IP, and Webapp targets. Fully custom workflow builder with step ordering, parallel step execution, per-step status/timing, and auto-generated finding summaries. Saves custom workflows to localStorage. |
 
 ### Reporting
 | Tool | What it does |
