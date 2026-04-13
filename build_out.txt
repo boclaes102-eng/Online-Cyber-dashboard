@@ -1,0 +1,122 @@
+
+> cyberops-dashboard@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.15
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (197kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled successfully in 6.8s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/93) ...
+   Generating static pages (23/93) 
+   Generating static pages (46/93) 
+   Generating static pages (69/93) 
+ ✓ Generating static pages (93/93)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      167 B         106 kB
+├ ƒ /_not-found                             1 kB         103 kB
+├ ƒ /api/asn                               227 B         102 kB
+├ ƒ /api/bgphijack                         227 B         102 kB
+├ ƒ /api/breach                            227 B         102 kB
+├ ƒ /api/certs                             227 B         102 kB
+├ ƒ /api/cors                              227 B         102 kB
+├ ƒ /api/csp                               227 B         102 kB
+├ ƒ /api/cve                               227 B         102 kB
+├ ƒ /api/dns                               227 B         102 kB
+├ ƒ /api/domain                            227 B         102 kB
+├ ƒ /api/email                             227 B         102 kB
+├ ƒ /api/emailsec                          227 B         102 kB
+├ ƒ /api/exploits                          227 B         102 kB
+├ ƒ /api/favicon                           227 B         102 kB
+├ ƒ /api/hash                              227 B         102 kB
+├ ƒ /api/headers                           227 B         102 kB
+├ ƒ /api/ioc                               227 B         102 kB
+├ ƒ /api/ip                                227 B         102 kB
+├ ƒ /api/openredirect                      227 B         102 kB
+├ ƒ /api/phishtank                         227 B         102 kB
+├ ƒ /api/portscan                          227 B         102 kB
+├ ƒ /api/ransomware                        227 B         102 kB
+├ ƒ /api/reverseip                         227 B         102 kB
+├ ƒ /api/robots                            227 B         102 kB
+├ ƒ /api/shodan                            227 B         102 kB
+├ ƒ /api/ssdeep                            227 B         102 kB
+├ ƒ /api/ssl                               227 B         102 kB
+├ ƒ /api/subdomains                        227 B         102 kB
+├ ƒ /api/tech                              227 B         102 kB
+├ ƒ /api/threatfox                         227 B         102 kB
+├ ƒ /api/traceroute                        227 B         102 kB
+├ ƒ /api/url                               227 B         102 kB
+├ ƒ /api/urlhaus                           227 B         102 kB
+├ ƒ /api/username                          227 B         102 kB
+├ ƒ /api/waf                               227 B         102 kB
+├ ƒ /api/wayback                           227 B         102 kB
+├ ƒ /api/whoishistory                      227 B         102 kB
+├ ƒ /sign-in                             1.62 kB         138 kB
+├ ƒ /sign-up                             1.62 kB         138 kB
+├ ƒ /tools/asn                           2.39 kB         104 kB
+├ ƒ /tools/automation                    9.56 kB         112 kB
+├ ƒ /tools/bgphijack                     3.96 kB         106 kB
+├ ƒ /tools/certs                         3.96 kB         106 kB
+├ ƒ /tools/cors                          3.61 kB         106 kB
+├ ƒ /tools/csp                           3.86 kB         106 kB
+├ ƒ /tools/cve                           4.58 kB         107 kB
+├ ƒ /tools/cvss                          2.91 kB         105 kB
+├ ƒ /tools/defaultcreds                   6.7 kB         109 kB
+├ ƒ /tools/dns                           3.66 kB         106 kB
+├ ƒ /tools/domain                        4.09 kB         106 kB
+├ ƒ /tools/dorks                          2.5 kB         104 kB
+├ ƒ /tools/email                         4.26 kB         106 kB
+├ ƒ /tools/emailsec                      3.16 kB         105 kB
+├ ƒ /tools/encoder                       2.75 kB         105 kB
+├ ƒ /tools/exploits                      2.67 kB         105 kB
+├ ƒ /tools/export                        6.83 kB         109 kB
+├ ƒ /tools/favicon                       3.67 kB         106 kB
+├ ƒ /tools/hash                          5.38 kB         107 kB
+├ ƒ /tools/hashtools                     5.72 kB         108 kB
+├ ƒ /tools/headers                       2.65 kB         105 kB
+├ ƒ /tools/hexbin                        4.54 kB         107 kB
+├ ƒ /tools/ioc                           4.03 kB         106 kB
+├ ƒ /tools/ip                             4.5 kB         106 kB
+├ ƒ /tools/jwt                           4.95 kB         107 kB
+├ ƒ /tools/notes                         6.01 kB         108 kB
+├ ƒ /tools/openredirect                  3.62 kB         106 kB
+├ ƒ /tools/password                      6.98 kB         109 kB
+├ ƒ /tools/payloads                       3.1 kB         105 kB
+├ ƒ /tools/phishtank                     3.76 kB         106 kB
+├ ƒ /tools/portscan                       4.2 kB         106 kB
+├ ƒ /tools/ransomware                    3.95 kB         106 kB
+├ ƒ /tools/regex                         6.55 kB         109 kB
+├ ƒ /tools/reverseip                      2.1 kB         104 kB
+├ ƒ /tools/robots                         3.9 kB         106 kB
+├ ƒ /tools/scope                         4.39 kB         106 kB
+├ ƒ /tools/shodan                        3.99 kB         106 kB
+├ ƒ /tools/ssdeep                        4.15 kB         106 kB
+├ ƒ /tools/ssl                           4.43 kB         106 kB
+├ ƒ /tools/subdomains                     2.1 kB         104 kB
+├ ƒ /tools/tech                          2.38 kB         104 kB
+├ ƒ /tools/threatfox                     3.59 kB         106 kB
+├ ƒ /tools/tokens                        3.09 kB         105 kB
+├ ƒ /tools/traceroute                    3.83 kB         106 kB
+├ ƒ /tools/url                           4.13 kB         106 kB
+├ ƒ /tools/urlhaus                       4.12 kB         106 kB
+├ ƒ /tools/username                       3.4 kB         105 kB
+├ ƒ /tools/waf                           2.62 kB         105 kB
+├ ƒ /tools/wayback                       3.24 kB         105 kB
+├ ƒ /tools/whoishistory                   4.3 kB         106 kB
+└ ƒ /verify-email-address                1.28 kB         137 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/1255-55f5611cfd370a3f.js      45.7 kB
+  ├ chunks/4bd1b696-100b9d70ed4e49c1.js  54.2 kB
+  └ other shared chunks (total)          2.05 kB
+
+
+ƒ Middleware                               87 kB
+
+ƒ  (Dynamic)  server-rendered on demand
+

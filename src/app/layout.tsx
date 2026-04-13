@@ -1,16 +1,19 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
+import { auth } from '@clerk/nextjs/server'
 import './globals.css'
-import LayoutShell from '@/components/layout/LayoutShell'
+import Sidebar from '@/components/layout/Sidebar'
+import Header from '@/components/layout/Header'
 
 export const metadata: Metadata = {
   title: 'CyberOps Dashboard',
   description: 'Personal cybersecurity operations platform — OSINT, threat intelligence, and analysis tools.',
   keywords: ['cybersecurity', 'OSINT', 'threat intelligence', 'security tools', 'CTF'],
-  themeColor: '#03060a',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { userId } = await auth()
+
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
@@ -20,7 +23,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </head>
         <body className="bg-cyber-bg text-cyber-text overflow-hidden">
-          <LayoutShell>{children}</LayoutShell>
+          {userId ? (
+            <div className="flex h-screen w-screen">
+              <Sidebar />
+              <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                <Header />
+                <main className="flex-1 overflow-y-auto bg-cyber-bg p-6">
+                  <div className="max-w-7xl mx-auto animate-fade-in">
+                    {children}
+                  </div>
+                </main>
+              </div>
+            </div>
+          ) : (
+            <>{children}</>
+          )}
         </body>
       </html>
     </ClerkProvider>
