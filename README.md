@@ -1,6 +1,6 @@
 # CyberOps Dashboard
 
-> A full-stack cybersecurity operations platform built with Next.js 13, TypeScript, and Tailwind CSS. 50+ integrated tools across OSINT, recon, threat intelligence, web analysis, forensics, and reporting — all behind a hardened auth layer with per-route rate limiting.
+> A full-stack cybersecurity operations platform built with Next.js 15, TypeScript, and Tailwind CSS. 50+ integrated tools across OSINT, recon, threat intelligence, web analysis, forensics, and reporting — all behind Clerk authentication with per-route rate limiting.
 
 ![CyberOps Dashboard](13.04.2026_09.36.55_REC.png)
 
@@ -102,14 +102,14 @@ Built entirely from scratch with zero heavy runtime dependencies. No chart libra
 ## Technical Highlights
 
 ### Architecture
-- **Next.js 13 App Router** — full use of the new `app/` directory, server components where appropriate, `'use client'` for interactive tools
-- **Edge Middleware** — auth guard + rate limiter runs at the Edge before any page or API route is reached
-- **Zero database** — stateless by design; auth is a comma-separated env var of 64-character hex keys; notes and report drafts persist in `localStorage`
+- **Next.js 15 App Router** — full use of the `app/` directory, server components where appropriate, `'use client'` for interactive tools
+- **Edge Middleware** — Clerk auth guard + rate limiter runs at the Edge before any page or API route is reached
+- **Zero database** — stateless by design; notes and report drafts persist in `localStorage`; user accounts managed by Clerk
 - **TypeScript throughout** — strict mode, discriminated union types for all API response shapes, no `any` escapes
 
 ### Auth & Security
-- **Stateless multi-key auth** — `DASHBOARD_API_KEYS` env var holds N comma-separated keys; each is independent, revocable without touching other users
-- **HttpOnly + Secure cookie** — auth token is never accessible to JavaScript; `secure: true` enforced in production; `sameSite: lax` CSRF protection
+- **Clerk authentication** — email + password login and registration with built-in email verification, session management, and user administration via the Clerk dashboard
+- **Edge-enforced auth** — every request passes through middleware before reaching any page or API; unauthenticated requests are redirected to `/sign-in`
 - **Sliding-window rate limiter** — built from scratch using a `Map<string, number[]>` of timestamps; default 60 req/min, 20 req/min for routes that call paid external APIs; no Redis dependency required
 - **XSS-safe** — React's default JSX escaping throughout; the one place that builds raw HTML (PDF export) does so in an isolated `window.open()` context, never in the dashboard DOM
 - **No SSRF surface** — all outbound requests in API routes target fixed known URLs; no user-controlled fetch targets
@@ -126,12 +126,13 @@ Built entirely from scratch with zero heavy runtime dependencies. No chart libra
 The entire production dependency list:
 
 ```
-next           13.5.7
-react          18.2.0
-react-dom      18.2.0
-lucide-react   0.363.0   (icons only)
-clsx           2.1.0     (classname utility)
-tailwind-merge 2.2.1     (Tailwind class deduplication)
+next            15.5.15
+react           19.0.0
+react-dom       19.0.0
+@clerk/nextjs   7.x       (auth)
+lucide-react    0.363.0   (icons only)
+clsx            2.1.0     (classname utility)
+tailwind-merge  2.2.1     (Tailwind class deduplication)
 ```
 
 No PDF library. No charting library. No form library. No state management library. No HTTP client. No utility belt (lodash/underscore). PDF export is `window.open()` + inline CSS + `window.print()`. Charts are CSS + inline styles.
@@ -142,13 +143,13 @@ No PDF library. No charting library. No form library. No state management librar
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 13.5 (App Router) |
-| Language | TypeScript 5.3 (strict) |
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript 5 (strict) |
 | Styling | Tailwind CSS 3.4 + custom cyber design tokens |
 | Icons | lucide-react |
-| Auth | Custom Edge Middleware + HttpOnly cookie |
+| Auth | Clerk (email + password, email verification) |
 | Rate Limiting | In-memory sliding window (Map-based) |
-| Storage | localStorage (client) + env vars (server secrets) |
+| Storage | localStorage (client) + Clerk (user accounts) |
 | Deployment | Vercel |
 
 ---
@@ -161,12 +162,11 @@ Browser
   ├─► GET /any-page
   │     └─► Edge Middleware
   │           ├─ Rate limit check (sliding window, per IP per route)
-  │           ├─ Auth check (cookie present + value in DASHBOARD_API_KEYS)
-  │           └─ 401/429/redirect if either fails
+  │           ├─ Clerk session check
+  │           └─ 429/redirect to /sign-in if either fails
   │
-  └─► POST /api/auth/login
-        ├─ Validates key against DASHBOARD_API_KEYS env var
-        └─ Sets HttpOnly, Secure, SameSite=Lax cookie (30-day)
+  ├─► /sign-in   — Clerk-managed email + password login
+  └─► /sign-up   — Clerk-managed registration + email verification
 ```
 
 API keys (VirusTotal, AbuseIPDB, Shodan, OTX, NVD) live exclusively in `process.env` — they are never exposed to the client bundle.
@@ -176,25 +176,15 @@ API keys (VirusTotal, AbuseIPDB, Shodan, OTX, NVD) live exclusively in `process.
 ## Local Setup
 
 ```bash
-git clone https://github.com/boclaes/cyberops-dashboard
-cd cyberops-dashboard
+git clone https://github.com/boclaes102-eng/Online-Cyber-dashboard
+cd Online-Cyber-dashboard
 npm install
 
 cp .env.local.example .env.local
-# Edit .env.local — set DASHBOARD_API_KEYS and any optional API keys
+# Add your Clerk keys and any optional API keys
 
 npm run dev
 # → http://localhost:3000
-```
-
-Generate an access key:
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-Add it to `.env.local`:
-```
-DASHBOARD_API_KEYS=<your_key>,<key_for_teammate>,<key_for_client>
 ```
 
 ---
@@ -206,13 +196,26 @@ DASHBOARD_API_KEYS=<your_key>,<key_for_teammate>,<key_for_client>
 3. Add all `.env.local` variables under **Settings → Environment Variables**
 4. Deploy — automatic on every push to `main`
 
-To revoke a user: remove their key from `DASHBOARD_API_KEYS` and redeploy.
+To manage users (invite, revoke, reset passwords): use the [Clerk Dashboard](https://dashboard.clerk.com).
 
 ---
 
-## API Keys (all optional)
+## Environment Variables
 
-Tools degrade gracefully without keys — they fall back to free/public endpoints where possible.
+### Required (Clerk)
+
+| Key | Where to get it |
+|---|---|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | clerk.com → your app → API Keys |
+| `CLERK_SECRET_KEY` | clerk.com → your app → API Keys |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | `/sign-up` |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | `/` |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | `/` |
+
+### Optional (tool API keys)
+
+Tools degrade gracefully without these — they fall back to free/public endpoints where possible.
 
 | Key | Free Tier | Used By |
 |---|---|---|
@@ -221,3 +224,4 @@ Tools degrade gracefully without keys — they fall back to free/public endpoint
 | `NVD_API_KEY` | 50 req/30s (vs 5) | CVE Explorer |
 | `SHODAN_API_KEY` | Free account | Port Scanner, Shodan Search |
 | `OTX_API_KEY` | Unlimited | IOC Lookup (threat intel enrichment) |
+| `PHISHTANK_API_KEY` | Free account | PhishTank Check |

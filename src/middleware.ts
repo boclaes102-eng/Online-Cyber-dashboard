@@ -85,15 +85,14 @@ function applyRateLimit(req: NextRequest): NextResponse | null {
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default clerkMiddleware(async (auth: any, req: any) => {
-  // Rate-limit all API routes first
+export default clerkMiddleware(async (auth, req) => {
+  // Rate-limit API routes first
   if (req.nextUrl.pathname.startsWith('/api/')) {
     const blocked = applyRateLimit(req as NextRequest)
     if (blocked) return blocked
   }
 
-  // Protect every non-public route
+  // Protect all non-public routes
   if (!isPublicRoute(req)) {
     await auth.protect()
   }
