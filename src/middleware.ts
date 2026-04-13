@@ -1,21 +1,10 @@
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-// ─── Auth ────────────────────────────────────────────────────────────────────
-const PUBLIC_PATHS = ['/login', '/api/auth']
-
 // ─── Rate limiting ────────────────────────────────────────────────────────────
-/**
- * Sliding-window in-memory rate limiter.
- * Default : 60 req / min per IP
- * Key routes: 20 req / min per IP (routes that consume paid API keys)
- *
- * NOTE: Each serverless instance owns its own Map. This is best-effort
- * protection against casual hammering. For a hard global cap, replace
- * the Map with Upstash Redis (@upstash/ratelimit).
- */
-const WINDOW_MS     = 60_000  // 1-minute rolling window
+const WINDOW_MS     = 60_000
 const DEFAULT_LIMIT = 60
-const KEY_LIMIT     = 20      // routes that burn external API keys
+const KEY_LIMIT     = 20
 
 const KEY_ROUTES = new Set([
   '/api/ip',
@@ -26,20 +15,19 @@ const KEY_ROUTES = new Set([
   '/api/exploits',
   '/api/emailsec',
   '/api/breach',
-  '/api/username',   // spawns ~20 parallel outbound requests per call
-  '/api/traceroute',    // long-running MTR + batch ip-api.com enrichment
-  '/api/cors',          // makes outbound requests with spoofed Origin headers
-  '/api/robots',        // fetches remote robots.txt + sitemap
-  '/api/openredirect',  // parallel outbound requests per parameter tested
-  '/api/csp',           // outbound fetch to target URL
-  '/api/shodan',        // outbound Shodan API query
-  '/api/urlhaus',       // outbound abuse.ch URLhaus POST
-  '/api/phishtank',     // outbound PhishTank POST
-  '/api/threatfox',     // outbound ThreatFox POST
-  '/api/ransomware',    // outbound ransomware.live fetch
+  '/api/username',
+  '/api/traceroute',
+  '/api/cors',
+  '/api/robots',
+  '/api/openredirect',
+  '/api/csp',
+  '/api/shodan',
+  '/api/urlhaus',
+  '/api/phishtank',
+  '/api/threatfox',
+  '/api/ransomware',
 ])
 
-// key = "ip:route" → sorted list of request timestamps
 const store = new Map<string, number[]>()
 let lastCleanup = Date.now()
 
@@ -64,10 +52,9 @@ function getClientIp(req: NextRequest): string {
 
 function applyRateLimit(req: NextRequest): NextResponse | null {
   maybeClean()
-
   const { pathname } = req.nextUrl
   const ip       = getClientIp(req)
-  const route    = '/' + pathname.split('/').slice(1, 3).join('/')  // /api/ip
+  const route    = '/' + pathname.split('/').slice(1, 3).join('/')
   const limit    = KEY_ROUTES.has(route) ? KEY_LIMIT : DEFAULT_LIMIT
   const now      = Date.now()
   const storeKey = `${ip}:${route}`
@@ -76,17 +63,15 @@ function applyRateLimit(req: NextRequest): NextResponse | null {
   if (stamps.length >= limit) {
     const retryAfter = Math.ceil((stamps[0] + WINDOW_MS - now) / 1000)
     return new NextResponse(
-      JSON.stringify({
-        error: `Rate limit exceeded — max ${limit} requests/min. Retry in ${retryAfter}s.`,
-      }),
+      JSON.stringify({ error: `Rate limit exceeded — max ${limit} requests/min. Retry in ${retryAfter}s.` }),
       {
         status: 429,
         headers: {
-          'Content-Type':      'application/json',
-          'Retry-After':       String(retryAfter),
-          'X-RateLimit-Limit': String(limit),
+          'Content-Type':          'application/json',
+          'Retry-After':           String(retryAfter),
+          'X-RateLimit-Limit':     String(limit),
           'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': String(Math.ceil((stamps[0] + WINDOW_MS) / 1000)),
+          'X-RateLimit-Reset':     String(Math.ceil((stamps[0] + WINDOW_MS) / 1000)),
         },
       }
     )
@@ -97,38 +82,22 @@ function applyRateLimit(req: NextRequest): NextResponse | null {
   return null
 }
 
-// ─── Combined middleware ──────────────────────────────────────────────────────
-export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
 
-  // ① Rate-limit all API routes (before auth check, so 429s are still returned
-  //    even for unauthenticated hammering attempts)
-  if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
-    const blocked = applyRateLimit(req)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default clerkMiddleware(async (auth: any, req: any) => {
+  // Rate-limit all API routes first
+  if (req.nextUrl.pathname.startsWith('/api/')) {
+    const blocked = applyRateLimit(req as NextRequest)
     if (blocked) return blocked
   }
 
-  // ② Auth guard — allow login page and auth endpoints through
-  if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
-    return NextResponse.next()
+  // Protect every non-public route
+  if (!isPublicRoute(req)) {
+    await auth.protect()
   }
-
-  const token       = req.cookies.get('cyberops_auth')?.value
-  const allowedKeys = (process.env.DASHBOARD_API_KEYS ?? '')
-    .split(',')
-    .map(k => k.trim())
-    .filter(Boolean)
-
-  if (!token || !allowedKeys.includes(token)) {
-    const loginUrl = new URL('/login', req.url)
-    if (pathname !== '/') loginUrl.searchParams.set('from', pathname)
-    const res = NextResponse.redirect(loginUrl)
-    res.cookies.delete('cyberops_auth')
-    return res
-  }
-
-  return NextResponse.next()
-}
+})
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],

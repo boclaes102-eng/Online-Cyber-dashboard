@@ -1,0 +1,7 @@
+src/app/layout.tsx(2,31): error TS2307: Cannot find module '@clerk/nextjs' or its corresponding type declarations.
+src/app/sign-in/page.tsx(3,27): error TS2307: Cannot find module '@clerk/nextjs' or its corresponding type declarations.
+src/app/sign-up/page.tsx(3,27): error TS2307: Cannot find module '@clerk/nextjs' or its corresponding type declarations.
+src/components/layout/Header.tsx(5,26): error TS2307: Cannot find module '@clerk/nextjs' or its corresponding type declarations.
+src/middleware.ts(1,53): error TS2307: Cannot find module '@clerk/nextjs/server' or its corresponding type declarations.
+src/middleware.ts(88,39): error TS7006: Parameter 'auth' implicitly has an 'any' type.
+src/middleware.ts(88,45): error TS7006: Parameter 'req' implicitly has an 'any' type.

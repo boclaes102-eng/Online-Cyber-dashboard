@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useClerk } from '@clerk/nextjs'
 import { Clock, Activity, LogOut } from 'lucide-react'
 
 const PAGE_TITLES: Record<string, string> = {
@@ -39,15 +40,15 @@ const PAGE_TITLES: Record<string, string> = {
 }
 
 export default function Header() {
-  const pathname = usePathname()
-  const router   = useRouter()
-  const [time, setTime]   = useState('')
-  const [date, setDate]   = useState('')
+  const pathname    = usePathname()
+  const router      = useRouter()
+  const { signOut } = useClerk()
+  const [time, setTime] = useState('')
+  const [date, setDate] = useState('')
 
   async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/login')
-    router.refresh()
+    await signOut()
+    router.push('/sign-in')
   }
 
   useEffect(() => {
