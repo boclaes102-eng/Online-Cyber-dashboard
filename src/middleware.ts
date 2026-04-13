@@ -83,7 +83,11 @@ function applyRateLimit(req: NextRequest): NextResponse | null {
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)', '/verify-email-address(.*)'])
+const isPublicRoute = createRouteMatcher([
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/verify-email-address(.*)',
+])
 
 export default clerkMiddleware(async (auth, req) => {
   // Rate-limit API routes first

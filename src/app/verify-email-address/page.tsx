@@ -35,6 +35,8 @@ const appearance = {
     otpCodeField:              'gap-2',
     alertText:                 'text-[#f85149] font-mono text-[10px]',
     alert:                     'bg-[#f85149]/10 border border-[#f85149]/30 rounded',
+    internal__poweredByClerkTag: '!hidden',
+    footer__poweredByClerk:      '!hidden',
   },
 }
 
@@ -52,7 +54,7 @@ export default function VerifyEmailPage() {
       <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#00f5d4]/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10 flex flex-col items-center">
-        <div className="flex flex-col items-center mb-8">
+        <div className="flex flex-col items-center mb-8 animate-auth-logo">
           <div className="relative mb-5">
             <div className="absolute inset-0 bg-[#00f5d4]/20 rounded-lg blur-xl" />
             <div className="relative w-16 h-16 rounded-lg border border-[#00f5d4]/30 flex items-center justify-center bg-[#00f5d4]/5">
@@ -63,7 +65,7 @@ export default function VerifyEmailPage() {
           <p className="font-mono text-[10px] text-[#8b949e] tracking-[0.3em] uppercase mt-1.5">Email Verification</p>
         </div>
 
-        <div className="w-full">
+        <div className="w-full animate-auth-card">
           <SignUp appearance={appearance} />
         </div>
       </div>

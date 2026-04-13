@@ -12,7 +12,8 @@
       "Bash(npx tsc:*)",
       "Bash(npx next:*)",
       "Bash(node_modules/.bin/tsc --noEmit)",
-      "Bash(echo \"exit:$?\")"
+      "Bash(echo \"exit:$?\")",
+      "Bash(npm run:*)"
     ]
   }
 }
