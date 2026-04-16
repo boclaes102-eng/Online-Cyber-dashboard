@@ -9,7 +9,7 @@ async function resolveDns(domain: string, type: string): Promise<DnsRecord[]> {
   try {
     const res = await fetch(
       `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=${type}`,
-      { next: { revalidate: 300 } }
+      { signal: AbortSignal.timeout(6_000), next: { revalidate: 300 } }
     )
     const data = await res.json()
     if (!data.Answer) return []
@@ -26,7 +26,7 @@ async function fetchCerts(domain: string): Promise<CertEntry[]> {
   try {
     const res = await fetch(
       `https://crt.sh/?q=%.${encodeURIComponent(domain)}&output=json`,
-      { next: { revalidate: 3600 } }
+      { signal: AbortSignal.timeout(10_000), next: { revalidate: 3600 } }
     )
     if (!res.ok) return []
     const data: Array<{
@@ -59,7 +59,7 @@ async function fetchRdap(domain: string) {
   try {
     const res = await fetch(
       `https://rdap.org/domain/${encodeURIComponent(domain)}`,
-      { next: { revalidate: 3600 } }
+      { signal: AbortSignal.timeout(8_000), next: { revalidate: 3600 } }
     )
     if (!res.ok) return null
     return await res.json()

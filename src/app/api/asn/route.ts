@@ -67,20 +67,21 @@ export async function GET(req: NextRequest) {
             website: asnInfo.website,
           }
         : null,
-      prefixes: (prefixes ?? []).map((p: any) => ({
-        prefix: p.prefix,
-        name: p.name,
+      prefixes: (prefixes ?? []).map((p: { prefix: string; name: string; description: string; country_code: string }) => ({
+        prefix:      p.prefix,
+        name:        p.name,
         description: p.description,
         countryCode: p.country_code,
       })),
-      peers: (peers ?? []).map((p: any) => ({
-        asn: p.asn,
-        name: p.name,
+      peers: (peers ?? []).map((p: { asn: number; name: string; description: string; country_code: string }) => ({
+        asn:         p.asn,
+        name:        p.name,
         description: p.description,
         countryCode: p.country_code,
       })),
     })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message ?? 'BGP lookup failed' }, { status: 500 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'BGP lookup failed'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

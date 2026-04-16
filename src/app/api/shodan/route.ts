@@ -40,8 +40,19 @@ const SHODAN_API = 'https://api.shodan.io'
 const TIMEOUT    = 15_000
 const IP_RE      = /^\d{1,3}(\.\d{1,3}){3}$/
 
+async function shodanError(res: Response): Promise<string> {
+  try {
+    const body = await res.json() as { error?: string }
+    return body.error ?? `Shodan HTTP ${res.status}`
+  } catch {
+    return `Shodan HTTP ${res.status}`
+  }
+}
+
+// Shodan API returns loosely-typed JSON — record<string, unknown> is intentional here
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseServices(dataArr: any[]): ShodanService[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (dataArr ?? []).map((d: any) => ({
     port:      Number(d.port ?? 0),
     transport: d.transport ?? 'tcp',
@@ -76,8 +87,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ query: q, mode, total: 0, hosts: [] } as ShodanResult)
       }
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        return NextResponse.json({ error: (err as any).error ?? `Shodan HTTP ${res.status}` }, { status: res.status })
+        return NextResponse.json({ error: await shodanError(res) }, { status: res.status })
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,16 +119,14 @@ export async function GET(req: NextRequest) {
     const res     = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT) })
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      return NextResponse.json({ error: (err as any).error ?? `Shodan HTTP ${res.status}` }, { status: res.status })
+      return NextResponse.json({ error: await shodanError(res) }, { status: res.status })
     }
 
+    // Shodan search response is loosely typed by design
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data: any = await res.json()
-
-    // Aggregate multiple banners per IP into one ShodanHost
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ipMap = new Map<string, ShodanHost>()
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const match of (data.matches ?? []) as any[]) {
       const ip = match.ip_str ?? ''

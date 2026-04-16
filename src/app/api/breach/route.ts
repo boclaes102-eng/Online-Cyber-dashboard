@@ -13,9 +13,10 @@ export async function GET(req: NextRequest) {
   try {
     const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`, {
       headers: {
-        'User-Agent':    'cyberops-dashboard/1.0',
-        'Add-Padding':   'true',
+        'User-Agent':  'cyberops-dashboard/1.0',
+        'Add-Padding': 'true',
       },
+      signal: AbortSignal.timeout(8_000),
       next: { revalidate: 3600 },
     })
 

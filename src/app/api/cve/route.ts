@@ -100,6 +100,7 @@ export async function GET(req: NextRequest) {
   try {
     const res = await fetch(`${NVD_BASE}?${nvdParams}`, {
       headers,
+      signal: AbortSignal.timeout(15_000),
       next: { revalidate: 300 },
     })
 

@@ -7,18 +7,18 @@ import { scorePassword } from '@/lib/password-scorer'
 import TerminalCard from '@/components/ui/TerminalCard'
 
 const STRENGTH_COLOR: Record<string, string> = {
-  VERY_WEAK:  'text-[#ff3366]',
-  WEAK:       'text-[#ff6633]',
-  FAIR:       'text-[#ffaa00]',
-  STRONG:     'text-[#66ff99]',
-  VERY_STRONG:'text-[#00ff88]',
+  VERY_WEAK:  'text-cyber-red',
+  WEAK:       'text-cyber-red',
+  FAIR:       'text-cyber-orange',
+  STRONG:     'text-cyber-green',
+  VERY_STRONG:'text-cyber-green',
 }
 const STRENGTH_BAR: Record<string, string> = {
-  VERY_WEAK:  'bg-[#ff3366]',
-  WEAK:       'bg-[#ff6633]',
-  FAIR:       'bg-[#ffaa00]',
-  STRONG:     'bg-[#66ff99]',
-  VERY_STRONG:'bg-[#00ff88]',
+  VERY_WEAK:  'bg-cyber-red',
+  WEAK:       'bg-cyber-red',
+  FAIR:       'bg-cyber-orange',
+  STRONG:     'bg-cyber-green',
+  VERY_STRONG:'bg-cyber-green',
 }
 const STRENGTH_WIDTH: Record<string, string> = {
   VERY_WEAK:  'w-[10%]',
