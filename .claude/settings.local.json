@@ -18,7 +18,9 @@
       "Bash(git commit -m ':*)",
       "Bash(git push:*)",
       "Bash(cmd.exe /c \"npx tsc --noEmit 2>&1\")",
-      "Bash(cmd.exe /c \"cd /d C:\\\\Users\\\\JessP\\\\Desktop\\\\Online-Cyber-dashboard && npx tsc --noEmit 2>&1\")"
+      "Bash(cmd.exe /c \"cd /d C:\\\\Users\\\\JessP\\\\Desktop\\\\Online-Cyber-dashboard && npx tsc --noEmit 2>&1\")",
+      "Bash(grep -E \"\\\\.\\(env|lock|txt|md\\)$\")",
+      "WebFetch(domain:threat-intel-platform-production-eb1b.up.railway.app)"
     ]
   }
 }

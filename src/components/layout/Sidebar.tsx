@@ -53,6 +53,8 @@ import {
   Regex,
   FileDown,
   NotebookPen,
+  MonitorCheck,
+  BellRing,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -149,6 +151,14 @@ const NAV = [
       { label: 'Token Generator',     href: '/tools/tokens',         icon: Coins },
       { label: 'Hex / Binary',        href: '/tools/hexbin',         icon: Binary },
       { label: 'Regex Tester',        href: '/tools/regex',          icon: Regex },
+    ],
+  },
+  {
+    section: 'ASSET MONITOR',
+    items: [
+      { label: 'Assets',           href: '/tools/monitor/assets',          icon: MonitorCheck },
+      { label: 'Alerts',           href: '/tools/monitor/alerts',          icon: BellRing     },
+      { label: 'Vulnerabilities',  href: '/tools/monitor/vulnerabilities', icon: ShieldAlert  },
     ],
   },
   {
