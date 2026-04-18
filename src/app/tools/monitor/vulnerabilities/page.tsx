@@ -80,7 +80,7 @@ export default function VulnerabilitiesPage() {
       <TerminalCard title="CVE Findings" label={`${vulns.length} found`} accent="red">
         {loading ? (
           <div className="flex items-center gap-2 py-4">
-            <Spinner size={14} /> <span className="font-mono text-xs text-cyber-muted">Loading…</span>
+            <Spinner size="sm" /> <span className="font-mono text-xs text-cyber-muted">Loading…</span>
           </div>
         ) : error ? (
           <p className="font-mono text-xs text-cyber-red">{error}</p>

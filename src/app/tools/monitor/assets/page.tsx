@@ -125,7 +125,7 @@ export default function AssetsPage() {
       <TerminalCard title="Monitored Assets" label={`${assets.length} registered`} accent="none">
         {loading ? (
           <div className="flex items-center gap-2 py-4">
-            <Spinner size={14} /> <span className="font-mono text-xs text-cyber-muted">Loading assets…</span>
+            <Spinner size="sm" /> <span className="font-mono text-xs text-cyber-muted">Loading assets…</span>
           </div>
         ) : error ? (
           <p className="font-mono text-xs text-cyber-red">{error}</p>
