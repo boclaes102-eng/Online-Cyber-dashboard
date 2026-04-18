@@ -1,4 +1,3 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 // ─── Rate limiting ────────────────────────────────────────────────────────────
@@ -50,7 +49,9 @@ function getClientIp(req: NextRequest): string {
   )
 }
 
-function applyRateLimit(req: NextRequest): NextResponse | null {
+export function middleware(req: NextRequest): NextResponse | undefined {
+  if (!req.nextUrl.pathname.startsWith('/api/')) return
+
   maybeClean()
   const { pathname } = req.nextUrl
   const ip       = getClientIp(req)
@@ -79,29 +80,8 @@ function applyRateLimit(req: NextRequest): NextResponse | null {
 
   stamps.push(now)
   store.set(storeKey, stamps)
-  return null
 }
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
-const isPublicRoute = createRouteMatcher([
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/verify-email-address(.*)',
-])
-
-export default clerkMiddleware(async (auth, req) => {
-  // Rate-limit API routes first
-  if (req.nextUrl.pathname.startsWith('/api/')) {
-    const blocked = applyRateLimit(req as NextRequest)
-    if (blocked) return blocked
-  }
-
-  // Protect all non-public routes
-  if (!isPublicRoute(req)) {
-    await auth.protect()
-  }
-})
-
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/api/:path*'],
 }

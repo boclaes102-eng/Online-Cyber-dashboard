@@ -20,7 +20,15 @@
       "Bash(cmd.exe /c \"npx tsc --noEmit 2>&1\")",
       "Bash(cmd.exe /c \"cd /d C:\\\\Users\\\\JessP\\\\Desktop\\\\Online-Cyber-dashboard && npx tsc --noEmit 2>&1\")",
       "Bash(grep -E \"\\\\.\\(env|lock|txt|md\\)$\")",
-      "WebFetch(domain:threat-intel-platform-production-eb1b.up.railway.app)"
+      "WebFetch(domain:threat-intel-platform-production-eb1b.up.railway.app)",
+      "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && head -50 {}')",
+      "Bash(xargs -I {} find {} -type f -name \"test_*.py\")",
+      "Bash(python -c ' *)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\JessP\\\\Desktop\\\\Cybersecurity-software\\\\Web-Application-Tester\\\\wat\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\JessP\\\\Desktop\\\\Cybersecurity-software\\\\Payload-Generator\\\\pgn\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\JessP\\\\Desktop\\\\Cybersecurity-software\\\\CVE-Exploit-Helper\\\\cve\")",
+      "Bash(python -c \"import os; print\\(os.path.exists\\('C:/Users/JessP/Desktop/Cybersecurity-software/Payload-Generator/pgn/shells.py'\\)\\)\")",
+      "Bash(python -c \"import sys; sys.stdout.buffer.write\\(sys.stdin.buffer.read\\(\\)\\)\")"
     ]
   }
 }

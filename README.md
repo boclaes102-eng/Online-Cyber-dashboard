@@ -1,6 +1,6 @@
 # CyberOps Dashboard
 
-> A full-stack cybersecurity operations platform built with Next.js 15, TypeScript, and Tailwind CSS. 50+ integrated tools across OSINT, recon, threat intelligence, web analysis, forensics, automation, asset monitoring, and reporting — all behind Clerk authentication with per-route rate limiting.
+> A full-stack cybersecurity operations platform built with Next.js 15, TypeScript, and Tailwind CSS. 50+ integrated tools across OSINT, recon, threat intelligence, web analysis, forensics, automation, asset monitoring, and reporting — with per-route rate limiting.
 
 ![CyberOps Dashboard](13.04.2026_09.36.55_REC.png)
 
@@ -10,7 +10,7 @@
 
 CyberOps is a self-hosted operations center for security professionals. Instead of jumping between a dozen browser tabs and CLI tools, every workflow lives in one place: from initial IP/domain triage through subdomain enumeration, threat intel correlation, web security analysis, hash forensics, and final report export — all in a consistent, keyboard-friendly interface.
 
-The dashboard is paired with a dedicated **[Threat Intel Platform](https://github.com/boclaes102-eng/threat-intel-platform)** backend — a separate service that runs continuous asset monitoring, CVE feed ingestion, and IOC scanning in the background. The dashboard proxies requests to it transparently; no second login required.
+The dashboard is paired with a dedicated **[Threat Intel Platform](https://github.com/boclaes102-eng/threat-intel-platform)** backend — a separate service that runs continuous asset monitoring, CVE feed ingestion, and IOC scanning in the background. The dashboard proxies requests to it transparently.
 
 ---
 
@@ -119,7 +119,7 @@ Powered by the [Threat Intel Platform](https://github.com/boclaes102-eng/threat-
 ┌─────────────────────────────────────────┐
 │          Browser (Vercel CDN)           │
 │         Next.js 15 App Router           │
-│  Clerk auth · Edge rate limiter         │
+│       Edge rate limiter (no auth)       │
 │                                         │
 │  /tools/monitor/* pages                 │
 │       │                                 │
@@ -152,7 +152,7 @@ The dashboard never exposes the backend API key to the browser. The Next.js prox
 
 ### Dashboard (this repo)
 - **Next.js 15 App Router** — full use of the `app/` directory, server components where appropriate, `'use client'` for interactive tools
-- **Edge Middleware** — Clerk auth guard + rate limiter runs at the Edge before any page or API route is reached
+- **Edge Middleware** — sliding-window rate limiter runs at the Edge before any API route is reached; no auth gate
 - **TypeScript throughout** — strict mode, discriminated union types for all API response shapes, no `any` escapes
 - **Zero runtime dependencies** — no chart libraries, no form libraries, no HTTP clients, no utility belts
 
@@ -164,9 +164,7 @@ The dashboard never exposes the backend API key to the browser. The Next.js prox
 - **GitHub Actions CI** — lint, security audit, migrate, unit + integration tests, Codecov coverage upload
 - **Prometheus + Grafana** — 8-panel pre-built observability dashboard
 
-### Auth & Security
-- **Clerk authentication** — email + password login and registration with built-in email verification
-- **Edge-enforced auth** — every request passes through middleware before reaching any page or API
+### Security
 - **Sliding-window rate limiter** — built from scratch using `Map<string, number[]>` of timestamps; 60 req/min default, 20 req/min for paid external API routes
 - **Server-side proxy** — backend API key never reaches the client bundle; injected at the Edge
 - **XSS-safe** — React's default JSX escaping throughout; PDF export uses an isolated `window.open()` context
@@ -191,9 +189,8 @@ The dashboard never exposes the backend API key to the browser. The Next.js prox
 | Language | TypeScript 5 (strict) |
 | Styling | Tailwind CSS 3.4 + custom cyber design tokens |
 | Icons | lucide-react |
-| Auth | Clerk (email + password, email verification) |
 | Rate Limiting | In-memory sliding window (Map-based) |
-| Storage | localStorage (client) + Clerk (user accounts) |
+| Storage | localStorage (client) |
 | Deployment | Vercel |
 
 ### Threat Intel Platform
@@ -212,29 +209,6 @@ The dashboard never exposes the backend API key to the browser. The Next.js prox
 
 ---
 
-## Security Design
-
-```
-Browser
-  │
-  ├─► GET /any-page
-  │     └─► Edge Middleware
-  │           ├─ Rate limit check (sliding window, per IP per route)
-  │           ├─ Clerk session check
-  │           └─ 429 / redirect to /sign-in if either fails
-  │
-  ├─► /api/monitor/*  (Asset Monitor proxy)
-  │     └─► Injects X-API-Key from process.env
-  │           └─► Forwards to Threat Intel Platform API
-  │
-  ├─► /sign-in   — Clerk-managed email + password login
-  └─► /sign-up   — Clerk-managed registration + email verification
-```
-
-Tool API keys (VirusTotal, AbuseIPDB, Shodan, OTX, NVD) and the backend API key live exclusively in `process.env` — never exposed to the client bundle.
-
----
-
 ## Local Setup
 
 ```bash
@@ -243,7 +217,7 @@ cd Online-Cyber-dashboard
 npm install
 
 cp .env.local.example .env.local
-# Add your Clerk keys and any optional API keys
+# Add any optional API keys
 
 npm run dev
 # → http://localhost:3000
@@ -257,25 +231,12 @@ To run the Asset Monitor locally, see the [threat-intel-platform README](https:/
 
 1. Push to GitHub
 2. Import repo at [vercel.com](https://vercel.com/new)
-3. Add all `.env.local` variables under **Settings → Environment Variables**
+3. Add `.env.local` variables under **Settings → Environment Variables**
 4. Deploy — automatic on every push to `main`
-
-To manage users (invite, revoke, reset passwords): use the [Clerk Dashboard](https://dashboard.clerk.com).
 
 ---
 
 ## Environment Variables
-
-### Required (Clerk)
-
-| Key | Where to get it |
-|---|---|
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | clerk.com → your app → API Keys |
-| `CLERK_SECRET_KEY` | clerk.com → your app → API Keys |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | `/sign-up` |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | `/` |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | `/` |
 
 ### Asset Monitor (Threat Intel Platform)
 
