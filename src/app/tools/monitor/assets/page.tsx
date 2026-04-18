@@ -116,7 +116,7 @@ export default function AssetsPage() {
             disabled={adding}
             className="flex items-center gap-2 px-4 py-1.5 bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan font-mono text-xs rounded hover:bg-cyber-cyan/20 transition-colors disabled:opacity-50"
           >
-            {adding ? <Spinner size={12} /> : <Plus size={12} />}
+            {adding ? <Spinner size="sm" /> : <Plus size={12} />}
             Add Asset
           </button>
         </div>
