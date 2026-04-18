@@ -55,6 +55,7 @@ import {
   NotebookPen,
   MonitorCheck,
   BellRing,
+  FolderOpen,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -151,6 +152,12 @@ const NAV = [
       { label: 'Token Generator',     href: '/tools/tokens',         icon: Coins },
       { label: 'Hex / Binary',        href: '/tools/hexbin',         icon: Binary },
       { label: 'Regex Tester',        href: '/tools/regex',          icon: Regex },
+    ],
+  },
+  {
+    section: 'WORKSPACE',
+    items: [
+      { label: 'Recon Sessions',  href: '/tools/workspace', icon: FolderOpen },
     ],
   },
   {

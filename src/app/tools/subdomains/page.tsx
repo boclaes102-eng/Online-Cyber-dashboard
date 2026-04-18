@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Loader2, ExternalLink } from 'lucide-react'
+import SaveToWorkspace from '@/components/ui/SaveToWorkspace'
 
 interface SubEntry { name: string; source: string }
 interface SubResult { domain: string; count: number; subdomains: SubEntry[]; sources: string[] }
@@ -59,6 +60,12 @@ export default function SubdomainsPage() {
                 <p className="font-mono text-[10px] text-cyber-muted">{result.sources.join(' · ')}</p>
               </div>
             </div>
+            <SaveToWorkspace
+              tool="subdomains"
+              target={result.domain}
+              results={result as unknown as Record<string, unknown>}
+              summary={{ domain: result.domain, count: result.count, sources: result.sources }}
+            />
             {result.count > 0 && (
               <input value={filter} onChange={e => setFilter(e.target.value)}
                 placeholder="Filter..."

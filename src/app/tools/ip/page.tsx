@@ -7,6 +7,7 @@ import TerminalCard from '@/components/ui/TerminalCard'
 import SeverityBadge from '@/components/ui/SeverityBadge'
 import CopyButton from '@/components/ui/CopyButton'
 import Spinner from '@/components/ui/Spinner'
+import SaveToWorkspace from '@/components/ui/SaveToWorkspace'
 import { formatDate } from '@/lib/utils'
 
 function RiskBadge({ level }: { level: IpResult['riskLevel'] }) {
@@ -165,7 +166,13 @@ export default function IpPage() {
 
           {/* Raw JSON */}
           <TerminalCard title="Raw Data" label="JSON" accent="none">
-            <div className="flex justify-end mb-2">
+            <div className="flex justify-end gap-2 mb-2">
+              <SaveToWorkspace
+                tool="ip"
+                target={result.ip}
+                results={result as unknown as Record<string, unknown>}
+                summary={{ ip: result.ip, country: result.country, isp: result.isp, riskLevel: result.riskLevel, abuseScore: result.abuseScore }}
+              />
               <CopyButton text={JSON.stringify(result, null, 2)} />
             </div>
             <pre className="font-mono text-[11px] text-cyber-text overflow-x-auto leading-relaxed">
