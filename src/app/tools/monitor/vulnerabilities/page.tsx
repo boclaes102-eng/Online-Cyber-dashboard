@@ -97,12 +97,13 @@ export default function VulnerabilitiesPage() {
                   <button
                     key={a.id}
                     onClick={() => { setAssetId(a.id); setExpanded(null) }}
-                    className={`font-mono text-[10px] px-2 py-px rounded border transition-colors ${
+                    className={`flex items-center gap-1.5 font-mono text-[10px] px-2 py-px rounded border transition-colors ${
                       assetId === a.id
                         ? 'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10'
                         : 'text-cyber-muted border-cyber-border hover:border-cyber-cyan/30'
                     }`}
                   >
+                    <span className="text-[8px] uppercase opacity-60">{a.type}</span>
                     {a.value}
                   </button>
                 ))}
