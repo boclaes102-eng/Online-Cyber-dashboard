@@ -6,6 +6,12 @@ import TerminalCard from '@/components/ui/TerminalCard'
 import SeverityBadge from '@/components/ui/SeverityBadge'
 import Spinner from '@/components/ui/Spinner'
 
+interface Asset {
+  id:    string
+  value: string
+  type:  string
+}
+
 interface Vuln {
   id:               string
   cveId:            string
@@ -24,16 +30,26 @@ const SEVERITIES = ['', 'critical', 'high', 'medium', 'low']
 
 export default function VulnerabilitiesPage() {
   const [vulns,    setVulns]    = useState<Vuln[]>([])
+  const [assets,   setAssets]   = useState<Asset[]>([])
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState('')
   const [severity, setSeverity] = useState('')
+  const [assetId,  setAssetId]  = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/monitor/assets?limit=100')
+      .then(r => r.json())
+      .then(d => setAssets(d.data ?? []))
+      .catch(() => {})
+  }, [])
 
   const fetchVulns = useCallback(async () => {
     setLoading(true); setError('')
     try {
       const params = new URLSearchParams({ limit: '50' })
       if (severity) params.set('severity', severity)
+      if (assetId)  params.set('assetId', assetId)
       const res  = await fetch(`/api/monitor/vulnerabilities?${params}`)
       const data = await res.json()
       if (data.error) setError(data.error)
@@ -41,11 +57,13 @@ export default function VulnerabilitiesPage() {
     } catch {
       setError('Failed to load vulnerabilities')
     } finally { setLoading(false) }
-  }, [severity])
+  }, [severity, assetId])
 
   useEffect(() => { fetchVulns() }, [fetchVulns])
 
   const toggle = (id: string) => setExpanded(e => e === id ? null : id)
+
+  const selectedAsset = assets.find(a => a.id === assetId)
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -59,25 +77,64 @@ export default function VulnerabilitiesPage() {
         </p>
       </div>
 
-      <TerminalCard title="Filter by Severity" accent="none">
-        <div className="flex flex-wrap gap-2">
-          {SEVERITIES.map(s => (
-            <button
-              key={s || 'all'}
-              onClick={() => setSeverity(s)}
-              className={`font-mono text-[10px] px-2 py-px rounded border transition-colors ${
-                severity === s
-                  ? 'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10'
-                  : 'text-cyber-muted border-cyber-border hover:border-cyber-cyan/30'
-              }`}
-            >
-              {s ? s.toUpperCase() : 'ALL'}
-            </button>
-          ))}
+      <TerminalCard title="Filters" accent="none">
+        <div className="space-y-3">
+          {assets.length > 0 && (
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-[10px] text-cyber-muted uppercase tracking-wider w-16 flex-none">Asset</span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => { setAssetId(''); setExpanded(null) }}
+                  className={`font-mono text-[10px] px-2 py-px rounded border transition-colors ${
+                    assetId === ''
+                      ? 'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10'
+                      : 'text-cyber-muted border-cyber-border hover:border-cyber-cyan/30'
+                  }`}
+                >
+                  ALL
+                </button>
+                {assets.map(a => (
+                  <button
+                    key={a.id}
+                    onClick={() => { setAssetId(a.id); setExpanded(null) }}
+                    className={`font-mono text-[10px] px-2 py-px rounded border transition-colors ${
+                      assetId === a.id
+                        ? 'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10'
+                        : 'text-cyber-muted border-cyber-border hover:border-cyber-cyan/30'
+                    }`}
+                  >
+                    {a.value}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[10px] text-cyber-muted uppercase tracking-wider w-16 flex-none">Severity</span>
+            <div className="flex flex-wrap gap-2">
+              {SEVERITIES.map(s => (
+                <button
+                  key={s || 'all'}
+                  onClick={() => setSeverity(s)}
+                  className={`font-mono text-[10px] px-2 py-px rounded border transition-colors ${
+                    severity === s
+                      ? 'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10'
+                      : 'text-cyber-muted border-cyber-border hover:border-cyber-cyan/30'
+                  }`}
+                >
+                  {s ? s.toUpperCase() : 'ALL'}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </TerminalCard>
 
-      <TerminalCard title="CVE Findings" label={`${vulns.length} found`} accent="red">
+      <TerminalCard
+        title="CVE Findings"
+        label={`${vulns.length} found${selectedAsset ? ` — ${selectedAsset.value}` : ''}`}
+        accent="red"
+      >
         {loading ? (
           <div className="flex items-center gap-2 py-4">
             <Spinner size="sm" /> <span className="font-mono text-xs text-cyber-muted">Loading…</span>
