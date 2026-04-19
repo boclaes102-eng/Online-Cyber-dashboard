@@ -94,7 +94,7 @@ export default function VulnerabilitiesPage() {
                   onClick={() => toggle(vuln.id)}
                   className="w-full flex items-center gap-3 p-3 bg-cyber-surface/40 hover:bg-cyber-surface/60 transition-colors text-left"
                 >
-                  <SeverityBadge severity={vuln.severity.toUpperCase()} size="sm" />
+                  <SeverityBadge severity={(vuln.severity ?? '').toUpperCase()} size="sm" />
                   <span className="font-mono text-xs text-cyber-cyan w-32 flex-none">{vuln.cveId}</span>
                   {vuln.cvssScore && (
                     <span className="font-mono text-[10px] text-cyber-muted flex-none">
@@ -104,15 +104,17 @@ export default function VulnerabilitiesPage() {
                   <span className="font-mono text-xs text-cyber-text flex-1 truncate">
                     {vuln.title ?? vuln.description.slice(0, 80)}
                   </span>
-                  <span className={`font-mono text-[9px] px-1.5 py-px rounded border flex-none ${
-                    vuln.status === 'open'
-                      ? 'text-cyber-red border-cyber-red/30 bg-cyber-red/5'
-                      : vuln.status === 'remediated'
-                        ? 'text-cyber-green border-cyber-green/30 bg-cyber-green/5'
-                        : 'text-cyber-muted border-cyber-border'
-                  }`}>
-                    {vuln.status.replace('_', ' ')}
-                  </span>
+                  {vuln.status && (
+                    <span className={`font-mono text-[9px] px-1.5 py-px rounded border flex-none ${
+                      vuln.status === 'open'
+                        ? 'text-cyber-red border-cyber-red/30 bg-cyber-red/5'
+                        : vuln.status === 'remediated'
+                          ? 'text-cyber-green border-cyber-green/30 bg-cyber-green/5'
+                          : 'text-cyber-muted border-cyber-border'
+                    }`}>
+                      {vuln.status.replace('_', ' ')}
+                    </span>
+                  )}
                   {expanded === vuln.id ? <ChevronUp size={12} className="text-cyber-muted flex-none" /> : <ChevronDown size={12} className="text-cyber-muted flex-none" />}
                 </button>
 
@@ -149,7 +151,7 @@ export default function VulnerabilitiesPage() {
                       </div>
                     )}
                     <p className="font-mono text-[9px] text-cyber-muted">
-                      Published: {new Date(vuln.publishedAt).toLocaleDateString()}
+                      Published: <span suppressHydrationWarning>{new Date(vuln.publishedAt).toISOString().split('T')[0]}</span>
                     </p>
                   </div>
                 )}
