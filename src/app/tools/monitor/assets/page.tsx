@@ -39,7 +39,7 @@ export default function AssetsPage() {
       const res  = await fetch('/api/monitor/assets?limit=50')
       const data = await res.json()
       if (data.error) setError(data.error)
-      else setAssets(data.items ?? [])
+      else setAssets(data.data ?? [])
     } catch {
       setError('Failed to load assets')
     } finally { setLoading(false) }
