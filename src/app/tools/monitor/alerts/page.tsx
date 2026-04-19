@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bell, BellOff, CheckCheck, Filter } from 'lucide-react'
+import { Bell, BellOff, CheckCheck, Filter, Trash2 } from 'lucide-react'
 import TerminalCard from '@/components/ui/TerminalCard'
 import SeverityBadge from '@/components/ui/SeverityBadge'
 import Spinner from '@/components/ui/Spinner'
@@ -55,6 +55,13 @@ export default function AlertsPage() {
       await fetch(`/api/monitor/alerts/${id}/read`, { method: 'POST' })
       setAlerts(prev => prev.map(a => a.id === id ? { ...a, readAt: new Date().toISOString() } : a))
     } catch { /* fire-and-forget, silently ignore */ }
+  }
+
+  async function deleteAlert(id: string) {
+    try {
+      await fetch(`/api/monitor/alerts/${id}`, { method: 'DELETE' })
+      setAlerts(prev => prev.filter(a => a.id !== id))
+    } catch { /* silently ignore */ }
   }
 
   const unreadCount = alerts.filter(a => !a.readAt).length
@@ -153,15 +160,24 @@ export default function AlertsPage() {
                     </span>
                   </div>
                 </div>
-                {!alert.readAt && (
+                <div className="flex-none flex items-center gap-1">
+                  {!alert.readAt && (
+                    <button
+                      onClick={() => markRead(alert.id)}
+                      className="text-cyber-muted hover:text-cyber-green transition-colors"
+                      title="Mark as read"
+                    >
+                      <CheckCheck size={12} />
+                    </button>
+                  )}
                   <button
-                    onClick={() => markRead(alert.id)}
-                    className="flex-none text-cyber-muted hover:text-cyber-green transition-colors"
-                    title="Mark as read"
+                    onClick={() => deleteAlert(alert.id)}
+                    className="text-cyber-muted hover:text-cyber-red transition-colors"
+                    title="Delete alert"
                   >
-                    <CheckCheck size={12} />
+                    <Trash2 size={12} />
                   </button>
-                )}
+                </div>
               </div>
             ))}
           </div>
