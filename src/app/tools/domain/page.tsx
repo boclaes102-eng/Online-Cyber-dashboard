@@ -108,15 +108,6 @@ export default function DomainPage() {
 
       {result && (
         <div className="space-y-4 animate-slide-up">
-          {/* Summary banner */}
-          <div className="flex justify-end">
-            <SaveToWorkspace
-              tool="domain"
-              target={result.domain}
-              results={result as unknown as Record<string, unknown>}
-              summary={{ domain: result.domain, dnsRecords: result.dns.length, subdomains: result.subdomains.length, certs: result.certs.length }}
-            />
-          </div>
           <TerminalCard title={result.domain} accent="cyan" scanline>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               {[
@@ -221,6 +212,15 @@ export default function DomainPage() {
               )}
             </TerminalCard>
           )}
+
+          <div className="flex justify-end">
+            <SaveToWorkspace
+              tool="domain"
+              target={result.domain}
+              results={result as unknown as Record<string, unknown>}
+              summary={{ domain: result.domain, dnsRecords: result.dns.length, subdomains: result.subdomains.length, certs: result.certs.length }}
+            />
+          </div>
         </div>
       )}
 
