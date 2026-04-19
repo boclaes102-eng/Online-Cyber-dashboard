@@ -10,8 +10,10 @@ import { formatDate, timeAgo } from '@/lib/utils'
 // Fetch latest CVEs server-side, revalidate every 10 min
 async function getLatestCves(): Promise<CveSearchResult> {
   try {
+    const pubStartDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}Z$/, '.000Z')
+    const pubEndDate   = new Date().toISOString().replace(/\.\d{3}Z$/, '.000Z')
     const res = await fetch(
-      'https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=8&startIndex=0',
+      `https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=8&startIndex=0&pubStartDate=${pubStartDate}&pubEndDate=${pubEndDate}`,
       { next: { revalidate: 600 } }
     )
     if (!res.ok) return { totalResults: 0, items: [] }
@@ -42,7 +44,7 @@ async function getLatestCves(): Promise<CveSearchResult> {
           cwe:          [],
           affectedProducts: [],
         }
-      }),
+      }).reverse(),
     }
   } catch { return { totalResults: 0, items: [] } }
 }
