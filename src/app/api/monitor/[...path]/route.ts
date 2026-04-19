@@ -26,6 +26,7 @@ async function proxy(req: NextRequest, path: string[]) {
   }
 
   const res  = await fetch(upstream, init)
+  if (res.status === 204) return new NextResponse(null, { status: 204 })
   const data = await res.json()
   return NextResponse.json(data, { status: res.status })
 }
