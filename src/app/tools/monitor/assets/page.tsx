@@ -154,9 +154,9 @@ export default function AssetsPage() {
                 )}
                 <div className="flex items-center gap-1 text-cyber-muted">
                   <Clock size={10} />
-                  <span className="font-mono text-[9px]">
+                  <span className="font-mono text-[9px]" suppressHydrationWarning>
                     {asset.lastScanned
-                      ? new Date(asset.lastScanned).toLocaleDateString()
+                      ? new Date(asset.lastScanned).toISOString().split('T')[0]
                       : 'Not scanned'}
                   </span>
                 </div>
