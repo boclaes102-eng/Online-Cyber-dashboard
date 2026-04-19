@@ -143,7 +143,14 @@ export default function VulnerabilitiesPage() {
         ) : error ? (
           <p className="font-mono text-xs text-cyber-red">{error}</p>
         ) : vulns.length === 0 ? (
-          <p className="font-mono text-xs text-cyber-muted">No vulnerabilities found for current filters.</p>
+          <div className="space-y-2 py-2">
+            <p className="font-mono text-xs text-cyber-muted">No vulnerabilities found for current filters.</p>
+            {assetId && (
+              <p className="font-mono text-[10px] text-cyber-muted/60">
+                The backend may still be building the CVE database. If this asset was just added, check back in a few minutes — correlation runs automatically once the CVE feed completes.
+              </p>
+            )}
+          </div>
         ) : (
           <div className="space-y-2">
             {vulns.map(vuln => (
