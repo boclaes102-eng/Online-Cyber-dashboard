@@ -37,7 +37,7 @@ export default function VulnerabilitiesPage() {
       const res  = await fetch(`/api/monitor/vulnerabilities?${params}`)
       const data = await res.json()
       if (data.error) setError(data.error)
-      else setVulns(data.items ?? [])
+      else setVulns(data.data ?? [])
     } catch {
       setError('Failed to load vulnerabilities')
     } finally { setLoading(false) }

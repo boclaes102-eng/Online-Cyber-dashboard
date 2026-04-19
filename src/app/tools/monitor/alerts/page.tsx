@@ -35,7 +35,7 @@ export default function AlertsPage() {
       const res  = await fetch(`/api/monitor/alerts?${params}`)
       const data = await res.json()
       if (data.error) setError(data.error)
-      else setAlerts(data.items ?? [])
+      else setAlerts(data.data ?? [])
     } catch {
       setError('Failed to load alerts')
     } finally { setLoading(false) }
