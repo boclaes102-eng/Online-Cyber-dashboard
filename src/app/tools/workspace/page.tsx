@@ -199,8 +199,8 @@ export default function WorkspacePage() {
                     ))}
                   </div>
                 )}
-                <span className="font-mono text-[10px] text-cyber-muted flex-none">
-                  {new Date(s.createdAt).toLocaleDateString()}
+                <span className="font-mono text-[10px] text-cyber-muted flex-none" suppressHydrationWarning>
+                  {new Date(s.createdAt).toISOString().split('T')[0]}
                 </span>
                 <button
                   onClick={e => { e.stopPropagation(); deleteSession(s.id) }}

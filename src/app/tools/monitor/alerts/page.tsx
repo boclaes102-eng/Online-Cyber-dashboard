@@ -44,13 +44,17 @@ export default function AlertsPage() {
   useEffect(() => { fetchAlerts() }, [fetchAlerts])
 
   async function markAllRead() {
-    await fetch('/api/monitor/alerts/read-all', { method: 'POST' })
-    setAlerts(prev => prev.map(a => ({ ...a, readAt: new Date().toISOString() })))
+    try {
+      await fetch('/api/monitor/alerts/read-all', { method: 'POST' })
+      setAlerts(prev => prev.map(a => ({ ...a, readAt: new Date().toISOString() })))
+    } catch { /* fire-and-forget, silently ignore */ }
   }
 
   async function markRead(id: string) {
-    await fetch(`/api/monitor/alerts/${id}/read`, { method: 'POST' })
-    setAlerts(prev => prev.map(a => a.id === id ? { ...a, readAt: new Date().toISOString() } : a))
+    try {
+      await fetch(`/api/monitor/alerts/${id}/read`, { method: 'POST' })
+      setAlerts(prev => prev.map(a => a.id === id ? { ...a, readAt: new Date().toISOString() } : a))
+    } catch { /* fire-and-forget, silently ignore */ }
   }
 
   const unreadCount = alerts.filter(a => !a.readAt).length
@@ -144,7 +148,7 @@ export default function AlertsPage() {
                       <span className="font-mono text-[10px] text-cyber-cyan">{alert.asset.value}</span>
                     )}
                     <span className="font-mono text-[10px] text-cyber-muted uppercase tracking-wider">{alert.type.replace('_', ' ')}</span>
-                    <span className="font-mono text-[10px] text-cyber-muted">
+                    <span className="font-mono text-[10px] text-cyber-muted" suppressHydrationWarning>
                       {new Date(alert.createdAt).toLocaleString()}
                     </span>
                   </div>

@@ -66,8 +66,10 @@ export default function AssetsPage() {
   }
 
   async function deleteAsset(id: string) {
-    await fetch(`/api/monitor/assets/${id}`, { method: 'DELETE' })
-    setAssets(prev => prev.filter(a => a.id !== id))
+    try {
+      await fetch(`/api/monitor/assets/${id}`, { method: 'DELETE' })
+      setAssets(prev => prev.filter(a => a.id !== id))
+    } catch { /* silently ignore network errors */ }
   }
 
   return (
