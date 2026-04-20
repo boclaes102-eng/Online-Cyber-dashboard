@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import fs from 'fs'
+import path from 'path'
 import {
   Globe, Search, Shield, Hash, KeyRound,
   ChevronRight, AlertTriangle, Activity, Database,
@@ -70,6 +72,15 @@ const ACCENT_ICON: Record<string, string> = {
   green:  'text-cyber-green',
 }
 
+function countActiveModules(): number {
+  try {
+    const toolsDir = path.join(process.cwd(), 'src/app/tools')
+    return fs.readdirSync(toolsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .length
+  } catch { return 0 }
+}
+
 function countConnectedApis(): number {
   const keys = [
     process.env.NVD_API_KEY,
@@ -85,7 +96,8 @@ function countConnectedApis(): number {
 
 export default async function DashboardPage() {
   const { items: cves, totalResults } = await getLatestCves()
-  const apisConnected = countConnectedApis()
+  const apisConnected   = countConnectedApis()
+  const activeModules   = countActiveModules()
 
   return (
     <div className="space-y-8">
@@ -109,7 +121,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { icon: Shield,         label: 'CVEs in NVD',       value: totalResults > 0 ? `${(totalResults/1000).toFixed(0)}K+` : '—', color: 'text-cyber-orange' },
-          { icon: Activity,       label: 'Active Modules',    value: '5',        color: 'text-cyber-green' },
+          { icon: Activity,       label: 'Active Modules',    value: String(activeModules), color: 'text-cyber-green' },
           { icon: Database,       label: 'APIs Connected',    value: String(apisConnected), color: 'text-cyber-cyan'  },
           { icon: AlertTriangle,  label: 'Threat Level',      value: 'MONITOR',  color: 'text-cyber-orange' },
         ].map(({ icon: Icon, label, value, color }) => (
