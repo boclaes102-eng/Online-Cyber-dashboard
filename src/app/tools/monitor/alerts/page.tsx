@@ -14,23 +14,40 @@ interface Alert {
   details:   Record<string, unknown>
   readAt:    string | null
   createdAt: string
-  asset?:    { value: string; type: string } | null
+  asset?:    { id: string; value: string; type: string; label: string | null } | null
+}
+
+interface Asset {
+  id:    string
+  value: string
+  type:  string
+  label: string | null
 }
 
 const SEVERITIES = ['', 'critical', 'high', 'medium', 'low', 'info']
 
 export default function AlertsPage() {
   const [alerts,    setAlerts]    = useState<Alert[]>([])
+  const [assets,    setAssets]    = useState<Asset[]>([])
   const [loading,   setLoading]   = useState(true)
   const [error,     setError]     = useState('')
   const [severity,  setSeverity]  = useState('')
+  const [assetId,   setAssetId]   = useState('')
   const [unreadOnly,setUnreadOnly]= useState(false)
+
+  useEffect(() => {
+    fetch('/api/monitor/assets?limit=100')
+      .then(r => r.json())
+      .then(d => setAssets(d.data ?? []))
+      .catch(() => {})
+  }, [])
 
   const fetchAlerts = useCallback(async () => {
     setLoading(true); setError('')
     try {
       const params = new URLSearchParams({ limit: '50' })
       if (severity)   params.set('severity', severity)
+      if (assetId)    params.set('assetId', assetId)
       if (unreadOnly) params.set('unread', 'true')
       const res  = await fetch(`/api/monitor/alerts?${params}`)
       const data = await res.json()
@@ -39,7 +56,7 @@ export default function AlertsPage() {
     } catch {
       setError('Failed to load alerts')
     } finally { setLoading(false) }
-  }, [severity, unreadOnly])
+  }, [severity, assetId, unreadOnly])
 
   useEffect(() => { fetchAlerts() }, [fetchAlerts])
 
@@ -84,41 +101,74 @@ export default function AlertsPage() {
       </div>
 
       <TerminalCard title="Filters" accent="none">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Filter size={11} className="text-cyber-muted" />
-            <span className="font-mono text-[10px] text-cyber-muted uppercase tracking-wider">Severity</span>
-          </div>
-          {SEVERITIES.map(s => (
-            <button
-              key={s || 'all'}
-              onClick={() => setSeverity(s)}
-              className={`font-mono text-[10px] px-2 py-px rounded border transition-colors ${
-                severity === s
-                  ? 'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10'
-                  : 'text-cyber-muted border-cyber-border hover:border-cyber-cyan/30'
-              }`}
-            >
-              {s || 'ALL'}
-            </button>
-          ))}
-          <label className="flex items-center gap-1.5 cursor-pointer ml-auto">
-            <input
-              type="checkbox"
-              checked={unreadOnly}
-              onChange={e => setUnreadOnly(e.target.checked)}
-              className="accent-cyber-cyan"
-            />
-            <span className="font-mono text-[10px] text-cyber-muted">Unread only</span>
-          </label>
-          {unreadCount > 0 && (
-            <button
-              onClick={markAllRead}
-              className="flex items-center gap-1.5 font-mono text-[10px] text-cyber-green hover:text-cyber-green/80 transition-colors"
-            >
-              <CheckCheck size={11} /> Mark all read
-            </button>
+        <div className="space-y-3">
+          {assets.length > 0 && (
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-[10px] text-cyber-muted uppercase tracking-wider w-16 flex-none">Asset</span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setAssetId('')}
+                  className={`font-mono text-[10px] px-2 py-px rounded border transition-colors ${
+                    assetId === ''
+                      ? 'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10'
+                      : 'text-cyber-muted border-cyber-border hover:border-cyber-cyan/30'
+                  }`}
+                >
+                  ALL
+                </button>
+                {assets.map(a => (
+                  <button
+                    key={a.id}
+                    onClick={() => setAssetId(a.id)}
+                    className={`flex items-center gap-1.5 font-mono text-[10px] px-2 py-px rounded border transition-colors ${
+                      assetId === a.id
+                        ? 'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10'
+                        : 'text-cyber-muted border-cyber-border hover:border-cyber-cyan/30'
+                    }`}
+                  >
+                    <span className="text-[8px] uppercase opacity-60">{a.type}</span>
+                    {a.label ?? a.value}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="font-mono text-[10px] text-cyber-muted uppercase tracking-wider w-16 flex-none">Severity</span>
+            <div className="flex flex-wrap gap-2">
+              <Filter size={11} className="text-cyber-muted self-center" />
+              {SEVERITIES.map(s => (
+                <button
+                  key={s || 'all'}
+                  onClick={() => setSeverity(s)}
+                  className={`font-mono text-[10px] px-2 py-px rounded border transition-colors ${
+                    severity === s
+                      ? 'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10'
+                      : 'text-cyber-muted border-cyber-border hover:border-cyber-cyan/30'
+                  }`}
+                >
+                  {s || 'ALL'}
+                </button>
+              ))}
+            </div>
+            <label className="flex items-center gap-1.5 cursor-pointer ml-auto">
+              <input
+                type="checkbox"
+                checked={unreadOnly}
+                onChange={e => setUnreadOnly(e.target.checked)}
+                className="accent-cyber-cyan"
+              />
+              <span className="font-mono text-[10px] text-cyber-muted">Unread only</span>
+            </label>
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllRead}
+                className="flex items-center gap-1.5 font-mono text-[10px] text-cyber-green hover:text-cyber-green/80 transition-colors"
+              >
+                <CheckCheck size={11} /> Mark all read
+              </button>
+            )}
+          </div>
         </div>
       </TerminalCard>
 
@@ -152,7 +202,10 @@ export default function AlertsPage() {
                   <p className="font-mono text-xs text-cyber-text-hi">{alert.title}</p>
                   <div className="flex items-center gap-3 mt-1">
                     {alert.asset && (
-                      <span className="font-mono text-[10px] text-cyber-cyan">{alert.asset.value}</span>
+                      <span className="font-mono text-[10px] text-cyber-cyan">
+                        <span className="opacity-60 text-[8px] uppercase mr-1">{alert.asset.type}</span>
+                        {alert.asset.label ?? alert.asset.value}
+                      </span>
                     )}
                     <span className="font-mono text-[10px] text-cyber-muted uppercase tracking-wider">{alert.type.replace('_', ' ')}</span>
                     <span className="font-mono text-[10px] text-cyber-muted" suppressHydrationWarning>
