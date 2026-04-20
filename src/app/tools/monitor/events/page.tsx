@@ -165,7 +165,7 @@ export default function EventsPage() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-cyber-border">
-                  {['Time', 'Source', 'Category', 'Action', 'Severity', 'Source IP', 'Message'].map(h => (
+                  {['Time', 'Source', 'Category', 'Action', 'Severity', 'Message'].map(h => (
                     <th key={h} className="pb-2 pr-4 font-mono text-[9px] text-cyber-muted uppercase tracking-wider whitespace-nowrap">
                       {h}
                     </th>
@@ -191,9 +191,6 @@ export default function EventsPage() {
                     </td>
                     <td className="py-2 pr-4 whitespace-nowrap">
                       <SeverityBadge severity={ev.severity.toUpperCase()} size="sm" />
-                    </td>
-                    <td className="py-2 pr-4 font-mono text-[10px] text-cyber-cyan whitespace-nowrap">
-                      {ev.sourceIp ?? '—'}
                     </td>
                     <td className="py-2 font-mono text-[10px] text-cyber-muted max-w-xs truncate">
                       {ev.message ?? '—'}
