@@ -56,6 +56,8 @@ import {
   MonitorCheck,
   BellRing,
   FolderOpen,
+  Activity,
+  Siren,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -166,6 +168,8 @@ const NAV = [
       { label: 'Assets',           href: '/tools/monitor/assets',          icon: MonitorCheck },
       { label: 'Alerts',           href: '/tools/monitor/alerts',          icon: BellRing     },
       { label: 'Vulnerabilities',  href: '/tools/monitor/vulnerabilities', icon: ShieldAlert  },
+      { label: 'Event Timeline',   href: '/tools/monitor/events',          icon: Activity     },
+      { label: 'Incidents',        href: '/tools/monitor/incidents',        icon: Siren        },
     ],
   },
   {
