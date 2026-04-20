@@ -70,8 +70,22 @@ const ACCENT_ICON: Record<string, string> = {
   green:  'text-cyber-green',
 }
 
+function countConnectedApis(): number {
+  const keys = [
+    process.env.NVD_API_KEY,
+    process.env.VT_API_KEY,
+    process.env.ABUSEIPDB_API_KEY,
+    process.env.OTX_API_KEY,
+    process.env.SHODAN_API_KEY,
+    process.env.PHISHTANK_API_KEY,
+    process.env.THREAT_INTEL_API_KEY,
+  ]
+  return keys.filter(Boolean).length
+}
+
 export default async function DashboardPage() {
   const { items: cves, totalResults } = await getLatestCves()
+  const apisConnected = countConnectedApis()
 
   return (
     <div className="space-y-8">
@@ -96,7 +110,7 @@ export default async function DashboardPage() {
         {[
           { icon: Shield,         label: 'CVEs in NVD',       value: totalResults > 0 ? `${(totalResults/1000).toFixed(0)}K+` : '—', color: 'text-cyber-orange' },
           { icon: Activity,       label: 'Active Modules',    value: '5',        color: 'text-cyber-green' },
-          { icon: Database,       label: 'APIs Connected',    value: '4',        color: 'text-cyber-cyan'  },
+          { icon: Database,       label: 'APIs Connected',    value: String(apisConnected), color: 'text-cyber-cyan'  },
           { icon: AlertTriangle,  label: 'Threat Level',      value: 'MONITOR',  color: 'text-cyber-orange' },
         ].map(({ icon: Icon, label, value, color }) => (
           <div key={label} className="cyber-card px-4 py-3 flex items-center gap-3">
