@@ -186,21 +186,21 @@ export default function VulnerabilitiesPage() {
                 {expanded === vuln.id && (
                   <div className="p-3 border-t border-cyber-border space-y-3 bg-cyber-surface/20">
                     <p className="font-mono text-xs text-cyber-text leading-relaxed">{vuln.description}</p>
-                    {vuln.affectedProducts.length > 0 && (
+                    {(vuln.affectedProducts ?? []).length > 0 && (
                       <div>
                         <p className="font-mono text-[9px] text-cyber-muted uppercase tracking-wider mb-1">Affected Products</p>
                         <div className="flex flex-wrap gap-1">
-                          {vuln.affectedProducts.map(p => (
+                          {(vuln.affectedProducts ?? []).map(p => (
                             <span key={p} className="font-mono text-[9px] text-cyber-text border border-cyber-border rounded px-1.5 py-px">{p}</span>
                           ))}
                         </div>
                       </div>
                     )}
-                    {vuln.references.length > 0 && (
+                    {(vuln.references ?? []).length > 0 && (
                       <div>
                         <p className="font-mono text-[9px] text-cyber-muted uppercase tracking-wider mb-1">References</p>
                         <div className="space-y-0.5">
-                          {vuln.references.slice(0, 3).map(ref => (
+                          {(vuln.references ?? []).slice(0, 3).map(ref => (
                             <a
                               key={ref}
                               href={ref}
