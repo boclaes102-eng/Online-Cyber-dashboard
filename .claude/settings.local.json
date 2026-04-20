@@ -28,7 +28,14 @@
       "Bash(mkdir -p \"C:\\\\Users\\\\JessP\\\\Desktop\\\\Cybersecurity-software\\\\Payload-Generator\\\\pgn\")",
       "Bash(mkdir -p \"C:\\\\Users\\\\JessP\\\\Desktop\\\\Cybersecurity-software\\\\CVE-Exploit-Helper\\\\cve\")",
       "Bash(python -c \"import os; print\\(os.path.exists\\('C:/Users/JessP/Desktop/Cybersecurity-software/Payload-Generator/pgn/shells.py'\\)\\)\")",
-      "Bash(python -c \"import sys; sys.stdout.buffer.write\\(sys.stdin.buffer.read\\(\\)\\)\")"
+      "Bash(python -c \"import sys; sys.stdout.buffer.write\\(sys.stdin.buffer.read\\(\\)\\)\")",
+      "Bash(git commit *)",
+      "Bash(curl -s -H \"X-API-Key: tip_7b32c20f6eedcdc8fe99647bee723a3503f23637b5106f2541d1d9d49169d595\" \"https://threat-intel-platform-production-eb1b.up.railway.app/api/v1/assets?limit=50\")",
+      "Bash(curl -s -H \"X-API-Key: tip_7b32c20f6eedcdc8fe99647bee723a3503f23637b5106f2541d1d9d49169d595\" \"https://threat-intel-platform-production-eb1b.up.railway.app/api/v1/alerts?limit=50\")",
+      "Bash(curl -s -o /dev/null -w 'DELETE __TRACKED_VAR__: %{http_code}\\\\n' -X DELETE -H 'X-API-Key: tip_7b32c20f6eedcdc8fe99647bee723a3503f23637b5106f2541d1d9d49169d595' https://threat-intel-platform-production-eb1b.up.railway.app/api/v1/alerts/__TRACKED_VAR__)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(grep -E \"route\\\\.\\(ts|tsx\\)$\")",
+      "Read(//c/Users/JessP/Desktop/Personal-web-page/**)"
     ]
   }
 }
