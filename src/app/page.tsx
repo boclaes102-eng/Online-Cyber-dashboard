@@ -90,6 +90,7 @@ function countConnectedApis(): number {
     process.env.SHODAN_API_KEY,
     process.env.PHISHTANK_API_KEY,
     process.env.THREAT_INTEL_API_KEY,
+    process.env.CLERK_SECRET_KEY,
   ]
   return keys.filter(Boolean).length
 }
