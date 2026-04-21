@@ -172,6 +172,26 @@ Requests proxied server-side via `/api/monitor/[...path]` — no CORS, no key ex
 | Alerts | Real-time security alerts from background scans — filter by severity, mark as read |
 | Vulnerabilities | CVEs matched to your assets by the backend's NVD feed sync — with remediation tracking |
 
+### SIEM
+Real-time security event monitoring sourced from connected infrastructure (currently: `thedeepspaceproject.be`).
+
+| Page | What it does |
+|---|---|
+| Event Timeline | Live feed of all security events across every source — filters by time range (1h / 6h / 24h / 7d), category, and severity. Auto-refreshes every 30s. |
+| Incidents | Auto-detected incidents raised by the correlation engine — status workflow (open → investigating → resolved), severity filtering. |
+
+**Correlation rules active:**
+
+| Rule | Trigger | Severity |
+|---|---|---|
+| Brute Force | 5+ failed logins in 10 min | HIGH |
+| XSS Attempt | Any `xss_attempt` event | HIGH |
+| SQL Injection | Any `sqli_attempt` event | HIGH |
+| Prototype Pollution | Any `prototype_pollution` event | HIGH |
+| IOC Spike | 3+ IOC matches in 10 min | HIGH |
+| Port Scan | 10+ unique destination ports from same IP in 5 min | MEDIUM |
+| Credential Stuffing | 10+ failed logins across 3+ target IPs in 5 min | CRITICAL |
+
 ### Reporting
 | Tool | What it does |
 |---|---|
