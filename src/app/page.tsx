@@ -6,6 +6,7 @@ import {
 import type { CveSearchResult } from '@/lib/types'
 import SeverityBadge from '@/components/ui/SeverityBadge'
 import { formatDate, timeAgo } from '@/lib/utils'
+import { toolCount } from '@/lib/nav'
 
 // Fetch latest CVEs server-side, revalidate every 10 min
 async function getLatestCves(): Promise<CveSearchResult> {
@@ -71,8 +72,7 @@ const ACCENT_ICON: Record<string, string> = {
 }
 
 function countActiveModules(): number {
-  // Total nav items across all sidebar sections (excluding Overview)
-  return 56
+  return toolCount
 }
 
 function countConnectedApis(): number {
