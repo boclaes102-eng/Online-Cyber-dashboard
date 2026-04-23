@@ -1,6 +1,4 @@
 import Link from 'next/link'
-import fs from 'fs'
-import path from 'path'
 import {
   Globe, Search, Shield, Hash, KeyRound,
   ChevronRight, AlertTriangle, Activity, Database,
@@ -73,12 +71,7 @@ const ACCENT_ICON: Record<string, string> = {
 }
 
 function countActiveModules(): number {
-  try {
-    const toolsDir = path.join(process.cwd(), 'src/app/tools')
-    return fs.readdirSync(toolsDir, { withFileTypes: true })
-      .filter(d => d.isDirectory())
-      .length
-  } catch { return 0 }
+  return TOOLS.length
 }
 
 function countConnectedApis(): number {
