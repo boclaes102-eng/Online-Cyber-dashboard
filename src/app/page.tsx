@@ -71,7 +71,8 @@ const ACCENT_ICON: Record<string, string> = {
 }
 
 function countActiveModules(): number {
-  return TOOLS.length
+  // Total nav items across all sidebar sections (excluding Overview)
+  return 56
 }
 
 function countConnectedApis(): number {
