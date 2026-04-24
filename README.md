@@ -1,6 +1,6 @@
 # CyberOps Dashboard
 
-> A full-stack cybersecurity operations platform — 50+ integrated tools across OSINT, recon, threat intelligence, web analysis, forensics, automation, asset monitoring, and reporting. Built with Next.js 15, TypeScript strict mode, and Tailwind CSS. Zero third-party UI or HTTP libraries. Deployed on Vercel.
+> A full-stack cybersecurity operations platform — 56 integrated tools across OSINT, recon, threat intelligence, web analysis, forensics, automation, asset monitoring, SIEM, and reporting. Built with Next.js 15, TypeScript strict mode, and Tailwind CSS. Zero third-party UI or HTTP libraries. Deployed on Vercel.
 
 ![CyberOps Dashboard](13.04.2026_09.36.55_REC.png)
 
@@ -23,7 +23,7 @@ Most importantly, this dashboard is one node in a **three-platform ecosystem**: 
 │                   CyberOps Dashboard  (this repo)                    │
 │                   Next.js 15 · Vercel · TypeScript strict            │
 │                                                                       │
-│   50+ recon / intel / analysis / web tools                            │
+│   56 recon / intel / analysis / web / SIEM tools                     │
 │   ↓  "Save to Workspace" button on every tool result                 │
 │   ↓  POST /api/monitor/recon-sessions  (server-side proxy)           │
 └───────────────────────────┬──────────────────────────────────────────┘
@@ -173,12 +173,12 @@ Requests proxied server-side via `/api/monitor/[...path]` — no CORS, no key ex
 | Vulnerabilities | CVEs matched to your assets by the backend's NVD feed sync — with remediation tracking |
 
 ### SIEM
-Real-time security event monitoring sourced from connected infrastructure (currently: `thedeepspaceproject.be`).
+Real-time security event monitoring sourced from connected infrastructure (currently: `thedeepspaceproject.be`). New HIGH/CRITICAL incidents trigger an email alert via Resend within 60 seconds of detection.
 
 | Page | What it does |
 |---|---|
-| Event Timeline | Live feed of all security events across every source — filters by time range (1h / 6h / 24h / 7d), category, and severity. Auto-refreshes every 30s. |
-| Incidents | Auto-detected incidents raised by the correlation engine — status workflow (open → investigating → resolved), severity filtering. |
+| Event Timeline | Live feed of all security events across every connected source — filters by time range (1h / 6h / 24h / 7d), category, and severity. Auto-refreshes every 30s. Global view across all users. |
+| Incidents | Auto-detected incidents from the correlation engine — status workflow (open → investigating → resolved), severity filtering. Email alerts fire on new HIGH/CRITICAL incidents. |
 
 **Correlation rules active:**
 
