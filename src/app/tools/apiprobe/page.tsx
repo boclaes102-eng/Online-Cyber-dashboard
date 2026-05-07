@@ -238,7 +238,7 @@ export default function ApiProbePage() {
               <span className="text-cyber-red">Open (data returned): {open.length}</span>
               <span className="text-yellow-400">RLS protected (empty): {rls.length}</span>
               <span className="text-cyber-orange">Blocked 401/403: {blocked.length}</span>
-              <span className="text-cyber-cyan">Hints leaked: {result.discoveredTables.length}</span>
+              <span className="text-cyber-cyan">Hints leaked: {probeResult.discoveredTables.length}</span>
             </div>
           </div>
 
