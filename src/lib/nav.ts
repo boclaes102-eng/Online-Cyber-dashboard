@@ -65,6 +65,7 @@ export const NAV: NavSection[] = [
       { label: 'Robots.txt Parser',  href: '/tools/robots',       icon: Bot              },
       { label: 'Open Redirect',      href: '/tools/openredirect', icon: CornerDownRight  },
       { label: 'CSP Analyzer',       href: '/tools/csp',          icon: FileCode         },
+      { label: 'JS Secret Scanner',  href: '/tools/secretscan',   icon: KeyRound         },
     ],
   },
   {

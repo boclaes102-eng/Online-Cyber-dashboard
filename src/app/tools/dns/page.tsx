@@ -76,7 +76,8 @@ export default function DnsPage() {
         <div className="space-y-3">
           <div className="flex gap-3">
             <input
-              className="cyber-input font-mono flex-1"
+              className="cyber-input font-mono"
+              style={{ flex: '1 1 0', width: 0 }}
               placeholder="hostname, domain, or IP (for PTR)…"
               value={query}
               onChange={e => setQuery(e.target.value)}
