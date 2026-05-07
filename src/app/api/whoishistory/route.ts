@@ -160,7 +160,7 @@ export async function GET(req: NextRequest) {
     dnssec:      rawDnssec,
     rawText:     rawText.slice(0, 5000),
     events,
-    ...(!created && !updated && !registrar && nameservers.length === 0 && events.length === 0
+    ...(!created && !updated && !registrar && rdapNameservers.length === 0 && rawNameservers.length === 0 && events.length === 0
       ? { error: 'WHOIS lookup failed or domain not found' } : {}),
   })
 }
