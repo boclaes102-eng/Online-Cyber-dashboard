@@ -96,6 +96,7 @@ body {
     border-radius: 4px;
     padding: 0.625rem 0.875rem;
     width: 100%;
+    min-width: 0;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
