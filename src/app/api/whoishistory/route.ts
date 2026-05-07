@@ -95,10 +95,12 @@ export async function GET(req: NextRequest) {
     }),
   ])
 
-  const rawText =
+  const rawTextFull =
     whoisSettled.status === 'fulfilled' && whoisSettled.value.ok
       ? await whoisSettled.value.text()
       : ''
+  // HackerTarget returns "error ..." strings with HTTP 200 — treat those as empty
+  const rawText = rawTextFull.startsWith('error') ? '' : rawTextFull
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rdap: any =
