@@ -41,3 +41,10 @@ next-env.d.ts
 # ── Misc ─────────────────────────────────────────────────────────────────────
 *.pem
 .vercel
+
+# ── Pentest reports — confidential, never commit ──────────────────────────────
+PENTEST_REPORT*.md
+pentest_report*.md
+*_pentest_report*.md
+pentest/
+reports/

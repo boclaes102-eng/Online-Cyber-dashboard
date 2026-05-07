@@ -17,56 +17,55 @@ export interface SecretScanResult {
 }
 
 const PATTERNS: { type: string; severity: SecretMatch['severity']; re: RegExp }[] = [
-  {
-    type: 'Supabase Anon Key (JWT)',
-    severity: 'critical',
-    re: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJyb2xlIjoiYW5vbiJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g,
-  },
-  {
-    type: 'Supabase Service Role Key (JWT)',
-    severity: 'critical',
-    re: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJyb2xlIjoic2VydmljZV9yb2xlIi[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g,
-  },
-  {
-    type: 'Supabase Project URL',
-    severity: 'high',
-    re: /https:\/\/[a-z0-9]{20}\.supabase\.co/g,
-  },
-  {
-    type: 'Supabase Anon Key (iss:supabase)',
-    severity: 'critical',
-    re: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJpc3MiOiJzdXBhYmFzZSI[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g,
-  },
-  {
-    type: 'Generic JWT',
-    severity: 'medium',
-    re: /eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}/g,
-  },
-  {
-    type: 'AWS Access Key',
-    severity: 'critical',
-    re: /AKIA[0-9A-Z]{16}/g,
-  },
-  {
-    type: 'Google API Key',
-    severity: 'high',
-    re: /AIza[0-9A-Za-z_\-]{35}/g,
-  },
-  {
-    type: 'Firebase Config',
-    severity: 'high',
-    re: /firebase[A-Za-z]*["\s:=]+["']?[A-Za-z0-9\-_]{20,}/gi,
-  },
-  {
-    type: 'NEXT_PUBLIC env variable',
-    severity: 'info',
-    re: /NEXT_PUBLIC_[A-Z_]{3,}["'`\s]*[:=]["'`\s]*["'`]([^"'`\s]{8,})/g,
-  },
-  {
-    type: 'Private Key',
-    severity: 'critical',
-    re: /-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/g,
-  },
+  // ── Supabase ──────────────────────────────────────────────────────────────
+  { type: 'Supabase Anon Key',         severity: 'critical', re: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJpc3MiOiJzdXBhYmFzZSI[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g },
+  { type: 'Supabase Service Role Key', severity: 'critical', re: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJyb2xlIjoic2VydmljZV9yb2xlIi[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g },
+  { type: 'Supabase Project URL',      severity: 'high',     re: /https:\/\/[a-z0-9]{20}\.supabase\.co/g },
+
+  // ── AWS ───────────────────────────────────────────────────────────────────
+  { type: 'AWS Access Key ID',         severity: 'critical', re: /AKIA[0-9A-Z]{16}/g },
+  { type: 'AWS Secret Access Key',     severity: 'critical', re: /(?:aws_secret|secretAccessKey|AWS_SECRET)[^A-Za-z0-9+/]{1,10}([A-Za-z0-9+/]{40})/gi },
+
+  // ── Google / Firebase ─────────────────────────────────────────────────────
+  { type: 'Google API Key',            severity: 'high',     re: /AIza[0-9A-Za-z_\-]{35}/g },
+  { type: 'Google OAuth Client ID',    severity: 'medium',   re: /[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com/g },
+  { type: 'Firebase Config apiKey',    severity: 'high',     re: /apiKey:\s*["'][A-Za-z0-9_\-]{20,}["']/g },
+  { type: 'Firebase Project ID',       severity: 'medium',   re: /projectId:\s*["'][a-z0-9\-]{4,}["']/g },
+  { type: 'Firebase Storage Bucket',   severity: 'medium',   re: /storageBucket:\s*["'][a-z0-9\-]+\.appspot\.com["']/g },
+
+  // ── Stripe ────────────────────────────────────────────────────────────────
+  { type: 'Stripe Live Secret Key',    severity: 'critical', re: /sk_live_[A-Za-z0-9]{24,}/g },
+  { type: 'Stripe Live Publishable',   severity: 'high',     re: /pk_live_[A-Za-z0-9]{24,}/g },
+  { type: 'Stripe Test Key',           severity: 'medium',   re: /sk_test_[A-Za-z0-9]{24,}/g },
+
+  // ── SendGrid / Mailgun / Twilio ───────────────────────────────────────────
+  { type: 'SendGrid API Key',          severity: 'critical', re: /SG\.[A-Za-z0-9_\-]{22}\.[A-Za-z0-9_\-]{43}/g },
+  { type: 'Mailgun API Key',           severity: 'critical', re: /key-[0-9a-zA-Z]{32}/g },
+  { type: 'Twilio Account SID',        severity: 'high',     re: /AC[a-z0-9]{32}/g },
+  { type: 'Twilio Auth Token',         severity: 'critical', re: /(?:twilio|TWILIO)[^a-z0-9]{1,20}([a-z0-9]{32})/gi },
+
+  // ── GitHub / GitLab ───────────────────────────────────────────────────────
+  { type: 'GitHub Personal Token',     severity: 'critical', re: /ghp_[A-Za-z0-9]{36}/g },
+  { type: 'GitHub App Token',          severity: 'critical', re: /ghs_[A-Za-z0-9]{36}/g },
+  { type: 'GitHub OAuth Token',        severity: 'critical', re: /gho_[A-Za-z0-9]{36}/g },
+  { type: 'GitHub Fine-Grained Token', severity: 'critical', re: /github_pat_[A-Za-z0-9_]{82}/g },
+  { type: 'GitLab Token',              severity: 'critical', re: /glpat-[A-Za-z0-9_\-]{20}/g },
+
+  // ── OpenAI / Anthropic ────────────────────────────────────────────────────
+  { type: 'OpenAI API Key',            severity: 'critical', re: /sk-[A-Za-z0-9]{48}/g },
+  { type: 'Anthropic API Key',         severity: 'critical', re: /sk-ant-[A-Za-z0-9_\-]{40,}/g },
+
+  // ── Cloudinary / Mapbox ───────────────────────────────────────────────────
+  { type: 'Cloudinary URL',            severity: 'high',     re: /cloudinary:\/\/[0-9]+:[A-Za-z0-9_\-]+@[a-z]+/g },
+  { type: 'Mapbox Token',              severity: 'high',     re: /pk\.eyJ1IjoiJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g },
+
+  // ── Generic secrets ───────────────────────────────────────────────────────
+  { type: 'Private Key',               severity: 'critical', re: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g },
+  { type: 'Generic JWT',               severity: 'medium',   re: /eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}/g },
+  { type: 'Bearer token in source',    severity: 'high',     re: /[Bb]earer\s+([A-Za-z0-9_\-\.]{40,})/g },
+  { type: 'Basic auth credentials',    severity: 'critical', re: /[Bb]asic\s+([A-Za-z0-9+/]{20,}={0,2})/g },
+  { type: 'NEXT_PUBLIC env variable',  severity: 'info',     re: /NEXT_PUBLIC_[A-Z_]{3,}["'`\s]*[:=]["'`\s]*["'`]([^"'`\s]{8,})/g },
+  { type: 'Hardcoded password',        severity: 'high',     re: /(?:password|passwd|pwd|secret|api_secret)['":\s=]+["']([^'"]{8,})["']/gi },
 ]
 
 const TIMEOUT_MS = 12_000

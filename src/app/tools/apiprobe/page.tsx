@@ -5,14 +5,23 @@ import { Database, ChevronDown, ChevronUp, AlertOctagon, CheckCircle, AlertTrian
 import TerminalCard from '@/components/ui/TerminalCard'
 import CopyButton from '@/components/ui/CopyButton'
 import Spinner from '@/components/ui/Spinner'
-import type { ApiProbeResult, BackendType, EndpointResult } from '@/app/api/apiprobe/route'
+import type { ApiProbeResult, AuthTestResult, BackendType, EndpointResult } from '@/app/api/apiprobe/route'
 
 const BACKENDS: { value: BackendType; label: string; urlPlaceholder: string; keyLabel: string; keyPlaceholder: string; hint: string }[] = [
   { value: 'supabase',           label: 'Supabase',            urlPlaceholder: 'https://xxxx.supabase.co',         keyLabel: 'Anon / Service Key',      keyPlaceholder: 'eyJhbGciOi…',                hint: 'Enumerates tables via OpenAPI, falls back to common table names. Detects open RLS policies and leaked table names via error hints.' },
   { value: 'firebase-rtdb',      label: 'Firebase RTDB',       urlPlaceholder: 'https://project.firebaseio.com',   keyLabel: 'Auth Token (optional)',    keyPlaceholder: 'leave blank for anon probe', hint: 'Probes common paths via /.json — exposes data if Firebase rules allow public read.' },
   { value: 'firebase-firestore', label: 'Firebase Firestore',  urlPlaceholder: 'your-firebase-project-id',         keyLabel: 'API Key (optional)',       keyPlaceholder: 'AIza…',                      hint: 'Probes common Firestore collections via the REST API.' },
   { value: 'generic',            label: 'Generic REST',        urlPlaceholder: 'https://api.target.com',           keyLabel: 'Bearer Token / API Key',  keyPlaceholder: 'token or leave blank',       hint: 'Tests /api, /api/v1, /api/v2, /graphql, /swagger.json, /openapi.json and more.' },
+  { value: 'auth-test',          label: 'Auth Bypass',         urlPlaceholder: 'https://xxxx.supabase.co',         keyLabel: 'Anon / API Key',          keyPlaceholder: 'eyJhbGciOi…',                hint: 'Tests JWT forgery, alg=none, user enumeration, and privilege escalation via role self-patch. Works on any Supabase project.' },
 ]
+
+const SEV_AUTH: Record<string, string> = {
+  critical: 'text-cyber-red border-cyber-red/40 bg-cyber-red/10',
+  high:     'text-cyber-orange border-cyber-orange/40 bg-cyber-orange/10',
+  medium:   'text-yellow-400 border-yellow-400/40 bg-yellow-400/10',
+  info:     'text-cyber-cyan border-cyber-cyan/40 bg-cyber-cyan/10',
+  safe:     'text-cyber-green border-cyber-green/40 bg-cyber-green/10',
+}
 
 function StatusPill({ status, accessible, empty }: { status: number; accessible: boolean; empty: boolean }) {
   const cls = accessible && !empty
@@ -92,13 +101,14 @@ function ResultRow({ r }: { r: EndpointResult }) {
 }
 
 export default function ApiProbePage() {
-  const [type,    setType]    = useState<BackendType>('supabase')
-  const [url,     setUrl]     = useState('')
-  const [apiKey,  setApiKey]  = useState('')
-  const [headers, setHeaders] = useState('')
-  const [result,  setResult]  = useState<ApiProbeResult | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState('')
+  const [type,         setType]        = useState<BackendType>('supabase')
+  const [url,          setUrl]         = useState('')
+  const [apiKey,       setApiKey]      = useState('')
+  const [headers,      setHeaders]     = useState('')
+  const [profileTable, setProfileTable]= useState('profiles')
+  const [result,       setResult]      = useState<ApiProbeResult | AuthTestResult | null>(null)
+  const [loading,      setLoading]     = useState(false)
+  const [error,        setError]       = useState('')
 
   const backend = BACKENDS.find(b => b.value === type)!
 
@@ -106,7 +116,7 @@ export default function ApiProbePage() {
     if (!url.trim()) return
     setLoading(true); setError(''); setResult(null)
     try {
-      const params = new URLSearchParams({ type, url: url.trim(), key: apiKey.trim(), headers: headers.trim() })
+      const params = new URLSearchParams({ type, url: url.trim(), key: apiKey.trim(), headers: headers.trim(), profileTable: profileTable.trim() })
       const res  = await fetch(`/api/apiprobe?${params}`)
       const data: ApiProbeResult = await res.json()
       if (data.error) setError(data.error)
@@ -118,9 +128,12 @@ export default function ApiProbePage() {
     }
   }
 
-  const open     = result?.results.filter(r => r.accessible && !r.empty) ?? []
-  const rls      = result?.results.filter(r => r.accessible && r.empty)  ?? []
-  const blocked  = result?.results.filter(r => !r.accessible && (r.status === 401 || r.status === 403)) ?? []
+  const isAuthTest = result?.backendType === 'auth-test'
+  const authResult = isAuthTest ? result as AuthTestResult : null
+  const probeResult = !isAuthTest ? result as ApiProbeResult | null : null
+  const open     = probeResult?.results.filter(r => r.accessible && !r.empty) ?? []
+  const rls      = probeResult?.results.filter(r => r.accessible && r.empty)  ?? []
+  const blocked  = probeResult?.results.filter(r => !r.accessible && (r.status === 401 || r.status === 403)) ?? []
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -171,6 +184,13 @@ export default function ApiProbePage() {
                 value={headers} onChange={e => setHeaders(e.target.value)} />
             </div>
           )}
+          {type === 'auth-test' && (
+            <div>
+              <label className="font-mono text-[10px] text-cyber-muted mb-1 block">Profile table name</label>
+              <input className="cyber-input font-mono w-full" placeholder='profiles'
+                value={profileTable} onChange={e => setProfileTable(e.target.value)} />
+            </div>
+          )}
 
           <button className="cyber-btn flex items-center gap-2 w-full justify-center"
             onClick={probe} disabled={loading}>
@@ -182,7 +202,27 @@ export default function ApiProbePage() {
 
       {error && <div className="cyber-card-red p-3 font-mono text-xs text-cyber-red">{error}</div>}
 
-      {result && (
+      {authResult && (
+        <div className="space-y-4 animate-slide-up">
+          <TerminalCard title="Auth Bypass Test Results" accent="orange">
+            <div className="space-y-0">
+              {authResult.tests.map((t, i) => (
+                <div key={i} className="py-2 border-b border-cyber-border/20 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <span className={`font-mono text-[10px] border rounded px-1.5 py-px flex-none ${SEV_AUTH[t.severity]}`}>
+                      {t.result}
+                    </span>
+                    <span className="font-mono text-xs text-cyber-text-hi">{t.label}</span>
+                  </div>
+                  <p className="font-mono text-[10px] text-cyber-muted ml-0 mt-0.5">{t.detail}</p>
+                </div>
+              ))}
+            </div>
+          </TerminalCard>
+        </div>
+      )}
+
+      {probeResult && (
         <div className="space-y-4 animate-slide-up">
           {/* Summary */}
           <div className={`p-4 rounded-md border ${open.length > 0 ? 'border-cyber-red/30 bg-cyber-red/5' : 'border-cyber-green/30 bg-cyber-green/5'}`}>
@@ -193,8 +233,8 @@ export default function ApiProbePage() {
               </span>
             </div>
             <div className="grid grid-cols-2 gap-x-6 gap-y-1 font-mono text-[10px] text-cyber-muted">
-              <span>Schema reachable: {result.schemaReachable ? '✓ yes' : '✗ no (fallback used)'}</span>
-              <span>Tables probed: {result.tablesProbed}</span>
+              <span>Schema reachable: {probeResult.schemaReachable ? '✓ yes' : '✗ no (fallback used)'}</span>
+              <span>Tables probed: {probeResult.tablesProbed}</span>
               <span className="text-cyber-red">Open (data returned): {open.length}</span>
               <span className="text-yellow-400">RLS protected (empty): {rls.length}</span>
               <span className="text-cyber-orange">Blocked 401/403: {blocked.length}</span>
@@ -203,22 +243,22 @@ export default function ApiProbePage() {
           </div>
 
           {/* Storage bucket */}
-          {result.storageBucket && (
+          {probeResult.storageBucket && (
             <div className="cyber-card p-3 border border-cyber-orange/30 bg-cyber-orange/5">
               <p className="font-mono text-[10px] text-cyber-orange font-bold mb-0.5">PUBLIC STORAGE BUCKET DETECTED</p>
               <div className="flex items-center gap-2">
-                <p className="font-mono text-xs text-cyber-text-hi break-all">{result.storageBucket}</p>
-                <CopyButton text={result.storageBucket} />
+                <p className="font-mono text-xs text-cyber-text-hi break-all">{probeResult.storageBucket}</p>
+                <CopyButton text={probeResult.storageBucket!} />
               </div>
             </div>
           )}
 
           {/* Discovered table names via hints */}
-          {result.discoveredTables.length > 0 && (
+          {probeResult.discoveredTables.length > 0 && (
             <div className="cyber-card p-3 border border-cyber-cyan/30 bg-cyber-cyan/5">
               <p className="font-mono text-[10px] text-cyber-cyan font-bold mb-1">TABLE NAMES LEAKED VIA ERROR HINTS</p>
               <div className="flex flex-wrap gap-1.5">
-                {result.discoveredTables.map(t => (
+                {probeResult.discoveredTables.map(t => (
                   <span key={t} className="font-mono text-[10px] border border-cyber-cyan/30 text-cyber-cyan rounded px-2 py-0.5">{t}</span>
                 ))}
               </div>
@@ -226,9 +266,9 @@ export default function ApiProbePage() {
           )}
 
           {/* Results */}
-          <TerminalCard title={`Results (${result.results.length} probed)`} accent="cyan">
+          <TerminalCard title={`Results (${probeResult.results.length} probed)`} accent="cyan">
             <div>
-              {result.results.map((r, i) => <ResultRow key={i} r={r} />)}
+              {probeResult.results.map((r, i) => <ResultRow key={i} r={r} />)}
             </div>
           </TerminalCard>
         </div>

