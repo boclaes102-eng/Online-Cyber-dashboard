@@ -49,6 +49,29 @@ function toIso(raw?: string): string | undefined {
   } catch { return undefined }
 }
 
+// TLD-specific RDAP server overrides for ccTLDs not covered by rdap.org bootstrap
+const RDAP_OVERRIDES: Record<string, string> = {
+  'be':  'https://rdap.dns.be/domain/',
+  'nl':  'https://rdap.domain-registry.nl/domain/',
+  'uk':  'https://rdap.nominet.uk/domain/',
+  'de':  'https://rdap.denic.de/domain/',
+  'fr':  'https://rdap.nic.fr/domain/',
+  'eu':  'https://rdap.eu/domain/',
+  'au':  'https://rdap.auda.org.au/domain/',
+  'ca':  'https://rdap.cira.ca/domain/',
+  'br':  'https://rdap.registro.br/domain/',
+  'jp':  'https://rdap.jprs.jp/domain/',
+  'ch':  'https://rdap.nic.ch/domain/',
+  'at':  'https://rdap.nic.at/domain/',
+  'pl':  'https://rdap.dns.pl/v1/domain/',
+  'se':  'https://rdap.iis.se/domain/',
+  'no':  'https://rdap.norid.no/domain/',
+  'dk':  'https://rdap.dk-hostmaster.dk/v1/domain/',
+  'fi':  'https://rdap.ficora.fi/domain/',
+  'nz':  'https://rdap.srs.net.nz/domain/',
+  'us':  'https://rdap.arin.net/registry/domain/',
+}
+
 export async function GET(req: NextRequest) {
   const domain = req.nextUrl.searchParams.get('domain')?.trim().toLowerCase()
   if (!domain) return NextResponse.json({ error: 'domain is required' }, { status: 400 })
@@ -57,12 +80,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid domain format' }, { status: 400 })
   }
 
+  const tld = domain.split('.').pop() ?? ''
+  const rdapBase = RDAP_OVERRIDES[tld] ?? `https://rdap.org/domain/`
+  const rdapUrl  = `${rdapBase}${encodeURIComponent(domain)}`
+
   const [whoisSettled, rdapSettled] = await Promise.allSettled([
     fetch(`https://api.hackertarget.com/whois/?q=${encodeURIComponent(domain)}`, {
       signal: AbortSignal.timeout(15_000),
       next: { revalidate: 3600 },
     }),
-    fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`, {
+    fetch(rdapUrl, {
       signal: AbortSignal.timeout(10_000),
       next: { revalidate: 3600 },
     }),
@@ -133,6 +160,7 @@ export async function GET(req: NextRequest) {
     dnssec:      rawDnssec,
     rawText:     rawText.slice(0, 5000),
     events,
-    ...(rawText.includes('error') && !created ? { error: 'WHOIS lookup failed or domain not found' } : {}),
+    ...(!created && !updated && !registrar && nameservers.length === 0 && events.length === 0
+      ? { error: 'WHOIS lookup failed or domain not found' } : {}),
   })
 }
