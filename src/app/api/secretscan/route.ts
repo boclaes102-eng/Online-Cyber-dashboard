@@ -33,6 +33,11 @@ const PATTERNS: { type: string; severity: SecretMatch['severity']; re: RegExp }[
     re: /https:\/\/[a-z0-9]{20}\.supabase\.co/g,
   },
   {
+    type: 'Supabase Anon Key (iss:supabase)',
+    severity: 'critical',
+    re: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJpc3MiOiJzdXBhYmFzZSI[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g,
+  },
+  {
     type: 'Generic JWT',
     severity: 'medium',
     re: /eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}/g,

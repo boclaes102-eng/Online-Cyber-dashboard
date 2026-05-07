@@ -66,6 +66,7 @@ export const NAV: NavSection[] = [
       { label: 'Open Redirect',      href: '/tools/openredirect', icon: CornerDownRight  },
       { label: 'CSP Analyzer',       href: '/tools/csp',          icon: FileCode         },
       { label: 'JS Secret Scanner',  href: '/tools/secretscan',   icon: KeyRound         },
+      { label: 'API / DB Prober',    href: '/tools/apiprobe',     icon: Database         },
     ],
   },
   {
